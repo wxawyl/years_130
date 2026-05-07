@@ -9,8 +9,10 @@ workflows:
       - name: Install dependencies
         script: |
           flutter pub get
-      - name: Build iOS IPA
+      - name: Build iOS Archive
         script: |
-          flutter build ipa --release --no-codesign
+          flutter build ios --release --no-codesign
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release clean archive -archivePath ../build/ios/Runner.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/Runner.xcarchive
