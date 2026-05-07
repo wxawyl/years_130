@@ -347,6 +347,16 @@ class DatabaseService {
     return await db.insert('mood_records', record.toMap());
   }
 
+  Future<List<MoodRecord>> getMoodRecords(String date) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'mood_records',
+      where: 'date = ?',
+      whereArgs: [date],
+    );
+    return List.generate(maps.length, (i) => MoodRecord.fromMap(maps[i]));
+  }
+
   Future<MoodRecord?> getMoodRecord(String date) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
