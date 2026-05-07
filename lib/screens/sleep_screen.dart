@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../models/sleep_record.dart';
 import '../models/knowledge_item.dart';
+import '../l10n/app_localizations.dart';
 
 class SleepScreen extends StatefulWidget {
   const SleepScreen({super.key});
@@ -16,19 +16,21 @@ class SleepScreen extends StatefulWidget {
 class _SleepScreenState extends State<SleepScreen> {
   final _dbService = DatabaseService();
   final _scoreService = ScoreService();
-  final _bedTimeController = TextEditingController();
-  final _wakeTimeController = TextEditingController();
-  final _notesController = TextEditingController();
-  int _quality = 3;
-  double _deepSleepRatio = 0.25;
-  List<KnowledgeItem> _knowledgeItems = [];
   List<SleepRecord> _todayRecords = [];
+  List<KnowledgeItem> _knowledgeItems = [];
+  int _sleepQuality = 3;
+  TimeOfDay _bedtime = const TimeOfDay(hour: 23, minute: 0);
+  TimeOfDay _wakeTime = const TimeOfDay(hour: 7, minute: 0);
 
   @override
   void initState() {
     super.initState();
-    _loadKnowledge();
-    _loadTodayRecords();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _loadKnowledge();
+    await _loadTodayRecords();
   }
 
   Future<void> _loadKnowledge() async {
@@ -42,194 +44,86 @@ class _SleepScreenState extends State<SleepScreen> {
     setState(() {});
   }
 
+  Future<void> _selectBedtime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _bedtime,
+    );
+    if (picked != null) {
+      setState(() => _bedtime = picked);
+    }
+  }
+
+  Future<void> _selectWakeTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _wakeTime,
+    );
+    if (picked != null) {
+      setState(() => _wakeTime = picked);
+    }
+  }
+
   Future<void> _saveRecord() async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    
+
+    String bedtimeStr = '${_bedtime.hour.toString().padLeft(2, '0')}:${_bedtime.minute.toString().padLeft(2, '0')}';
+    String wakeTimeStr = '${_wakeTime.hour.toString().padLeft(2, '0')}:${_wakeTime.minute.toString().padLeft(2, '0')}';
+
+    double duration = _calculateSleepDuration();
+
     SleepRecord record = SleepRecord(
       date: today,
-      bedTime: _bedTimeController.text,
-      wakeTime: _wakeTimeController.text,
-      duration: _calculateDuration(),
-      quality: _quality,
-      deepSleepRatio: _deepSleepRatio,
-      notes: _notesController.text,
+      bedtime: bedtimeStr,
+      wakeTime: wakeTimeStr,
+      duration: duration,
+      quality: _sleepQuality,
     );
 
     await _dbService.insertSleepRecord(record);
     await _scoreService.calculateDailyScore(today);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('睡眠记录保存成功！')),
-    );
-    
-    _bedTimeController.clear();
-    _wakeTimeController.clear();
-    _notesController.clear();
-    _quality = 3;
-    _deepSleepRatio = 0.25;
     await _loadTodayRecords();
-  }
 
-  double? _calculateDuration() {
-    if (_bedTimeController.text.isEmpty || _wakeTimeController.text.isEmpty) {
-      return null;
-    }
-    
-    try {
-      List<String> bedParts = _bedTimeController.text.split(':');
-      List<String> wakeParts = _wakeTimeController.text.split(':');
-      
-      int bedHour = int.parse(bedParts[0]);
-      int bedMin = int.parse(bedParts[1]);
-      int wakeHour = int.parse(wakeParts[0]);
-      int wakeMin = int.parse(wakeParts[1]);
-      
-      int bedTotal = bedHour * 60 + bedMin;
-      int wakeTotal = wakeHour * 60 + wakeMin;
-      
-      int diff = wakeTotal - bedTotal;
-      if (diff < 0) diff += 24 * 60;
-      
-      return diff / 60;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  void _editRecord(SleepRecord record) {
-    _bedTimeController.text = record.bedTime ?? '';
-    _wakeTimeController.text = record.wakeTime ?? '';
-    _notesController.text = record.notes ?? '';
-    _quality = record.quality ?? 3;
-    _deepSleepRatio = record.deepSleepRatio ?? 0.25;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('编辑睡眠记录'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: _bedTimeController,
-                decoration: const InputDecoration(labelText: '入睡时间'),
-                keyboardType: TextInputType.datetime,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _wakeTimeController,
-                decoration: const InputDecoration(labelText: '醒来时间'),
-                keyboardType: TextInputType.datetime,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Text('睡眠质量'),
-                  const Spacer(),
-                  Row(
-                    children: List.generate(5, (index) {
-                      return IconButton(
-                        icon: Icon(
-                          Icons.star,
-                          color: index < _quality ? Colors.yellow : Colors.grey,
-                        ),
-                        onPressed: () => setState(() => _quality = index + 1),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _notesController,
-                decoration: const InputDecoration(labelText: '备注'),
-                maxLines: 3,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _bedTimeController.clear();
-              _wakeTimeController.clear();
-              _notesController.clear();
-              _quality = 3;
-              _deepSleepRatio = 0.25;
-              Navigator.pop(context);
-            },
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              SleepRecord updatedRecord = SleepRecord(
-                id: record.id,
-                date: record.date,
-                bedTime: _bedTimeController.text,
-                wakeTime: _wakeTimeController.text,
-                duration: _calculateDuration(),
-                quality: _quality,
-                deepSleepRatio: _deepSleepRatio,
-                notes: _notesController.text,
-              );
-              
-              await _dbService.updateSleepRecord(updatedRecord);
-              await _scoreService.calculateDailyScore(record.date);
-              await _loadTodayRecords();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('记录更新成功！')),
-              );
-              
-              _bedTimeController.clear();
-              _wakeTimeController.clear();
-              _notesController.clear();
-              _quality = 3;
-              _deepSleepRatio = 0.25;
-              Navigator.pop(context);
-            },
-            child: const Text('保存'),
-          ),
-        ],
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.sleepRecordSaved)),
     );
   }
 
-  void _deleteRecord(SleepRecord record) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条睡眠记录吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _dbService.deleteSleepRecord(record.id!);
-              await _scoreService.calculateDailyScore(record.date);
-              await _loadTodayRecords();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('记录已删除')),
-              );
-              
-              Navigator.pop(context);
-            },
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
+  double _calculateSleepDuration() {
+    int bedtimeMinutes = _bedtime.hour * 60 + _bedtime.minute;
+    int wakeTimeMinutes = _wakeTime.hour * 60 + _wakeTime.minute;
+    int durationMinutes = wakeTimeMinutes - bedtimeMinutes;
+    if (durationMinutes < 0) {
+      durationMinutes += 24 * 60;
+    }
+    return durationMinutes / 60.0;
+  }
+
+  String _getQualityText(int quality, AppLocalizations l10n) {
+    switch (quality) {
+      case 5:
+        return l10n.veryHappy;
+      case 4:
+        return l10n.happy;
+      case 3:
+        return l10n.normal;
+      case 2:
+        return l10n.sad;
+      case 1:
+        return l10n.verySad;
+      default:
+        return l10n.normal;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('睡眠管理'),
+        title: Text(l10n.sleepManagement),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -237,11 +131,11 @@ class _SleepScreenState extends State<SleepScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '记录睡眠',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.sleepDuration,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -251,151 +145,176 @@ class _SleepScreenState extends State<SleepScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.nightlight_round, color: Colors.blue),
-                        const SizedBox(width: 8),
-                        const Text('入睡时间'),
-                        const Spacer(),
-                        SizedBox(
-                          width: 120,
-                          child: TextField(
-                            controller: _bedTimeController,
-                            decoration: const InputDecoration(
-                              hintText: '22:30',
-                              border: OutlineInputBorder(),
+                        Expanded(
+                          child: InkWell(
+                            onTap: _selectBedtime,
+                            child: Column(
+                              children: [
+                                const Icon(Icons.bedtime, color: Color(0xFF66BB6A), size: 32),
+                                const SizedBox(height: 8),
+                                Text(l10n.bedtime, style: const TextStyle(color: Colors.grey)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${_bedtime.hour.toString().padLeft(2, '0')}:${_bedtime.minute.toString().padLeft(2, '0')}',
+                                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
-                            keyboardType: TextInputType.datetime,
+                          ),
+                        ),
+                        Container(
+                          width: 60,
+                          height: 2,
+                          color: Colors.grey[300],
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: _selectWakeTime,
+                            child: Column(
+                              children: [
+                                const Icon(Icons.wb_sunny, color: Colors.orange, size: 32),
+                                const SizedBox(height: 8),
+                                Text(l10n.wakeTime, style: const TextStyle(color: Colors.grey)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${_wakeTime.hour.toString().padLeft(2, '0')}:${_wakeTime.minute.toString().padLeft(2, '0')}',
+                                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.wb_sunny, color: Colors.amber),
-                        const SizedBox(width: 8),
-                        const Text('醒来时间'),
-                        const Spacer(),
-                        SizedBox(
-                          width: 120,
-                          child: TextField(
-                            controller: _wakeTimeController,
-                            decoration: const InputDecoration(
-                              hintText: '07:30',
-                              border: OutlineInputBorder(),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF66BB6A).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${_calculateSleepDuration().toStringAsFixed(1)} ${l10n.hours}',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF66BB6A),
                             ),
-                            keyboardType: TextInputType.datetime,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.yellow),
-                        const SizedBox(width: 8),
-                        const Text('睡眠质量'),
-                        const Spacer(),
-                        Row(
-                          children: List.generate(5, (index) {
-                            return IconButton(
-                              icon: Icon(
-                                Icons.star,
-                                color: index < _quality ? Colors.yellow : Colors.grey,
-                              ),
-                              onPressed: () => setState(() => _quality = index + 1),
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.cloud, color: Colors.lightBlue),
-                        const SizedBox(width: 8),
-                        const Text('深度睡眠比例'),
-                        const Spacer(),
-                        Text('${(_deepSleepRatio * 100).toStringAsFixed(0)}%'),
-                      ],
-                    ),
-                    Slider(
-                      value: _deepSleepRatio,
-                      min: 0.1,
-                      max: 0.5,
-                      onChanged: (value) => setState(() => _deepSleepRatio = value),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _notesController,
-                      decoration: const InputDecoration(
-                        hintText: '备注（可选）',
-                        border: OutlineInputBorder(),
+                        ],
                       ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _saveRecord,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF66BB6A),
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text('保存记录', style: TextStyle(fontSize: 16)),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              '今日记录',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.sleepQuality,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(5, (index) {
+                        int quality = 5 - index;
+                        return GestureDetector(
+                          onTap: () => setState(() => _sleepQuality = quality),
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _sleepQuality == quality
+                                  ? const Color(0xFF66BB6A)
+                                  : Colors.grey[200],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                _getQualityIcon(quality),
+                                color: _sleepQuality == quality ? Colors.white : Colors.grey,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _getQualityText(_sleepQuality, l10n),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF66BB6A),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _saveRecord,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF66BB6A),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(l10n.recordSleep, style: const TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              l10n.todayRecords,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             _todayRecords.isEmpty
-                ? const Center(child: Text('暂无今日睡眠记录'))
+                ? Center(child: Text(l10n.noSleepRecords))
                 : ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: _todayRecords.length,
                     itemBuilder: (context, index) {
                       var record = _todayRecords[index];
-                      return Slidable(
-                        endActionPane: ActionPane(
-                          motion: const DrawerMotion(),
-                          extentRatio: 0.25,
-                          children: [
-                            SlidableAction(
-                              label: '编辑',
-                              backgroundColor: Colors.blue,
-                              icon: Icons.edit,
-                              onPressed: (context) => _editRecord(record),
+                      return Card(
+                        child: ListTile(
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF66BB6A).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            SlidableAction(
-                              label: '删除',
-                              backgroundColor: Colors.red,
-                              icon: Icons.delete,
-                              onPressed: (context) => _deleteRecord(record),
-                            ),
-                          ],
-                        ),
-                        child: Card(
-                          child: ListTile(
-                            title: Text('入睡: ${record.bedTime} - 醒来: ${record.wakeTime}'),
-                            subtitle: Text(
-                              '时长: ${record.duration?.toStringAsFixed(1)}小时 | 质量: ${'⭐' * (record.quality ?? 0)}',
-                            ),
-                            trailing: Text(record.notes ?? ''),
+                            child: const Icon(Icons.bed, color: Color(0xFF66BB6A)),
+                          ),
+                          title: Text('${record.bedtime} - ${record.wakeTime}'),
+                          subtitle: Text('${record.duration.toStringAsFixed(1)} ${l10n.hours}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(_getQualityIcon(record.quality), color: const Color(0xFF66BB6A)),
+                              const SizedBox(width: 4),
+                              Text(_getQualityText(record.quality, l10n)),
+                            ],
                           ),
                         ),
                       );
                     },
                   ),
             const SizedBox(height: 20),
-            const Text(
-              '睡眠科普',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.sleepEducation,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             ListView.builder(
@@ -407,7 +326,7 @@ class _SleepScreenState extends State<SleepScreen> {
                 return Card(
                   child: ExpansionTile(
                     title: Text(item.title),
-                    subtitle: Text('来源: ${item.source}'),
+                    subtitle: Text('${l10n.source}: ${item.source}'),
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(16),
@@ -422,5 +341,22 @@ class _SleepScreenState extends State<SleepScreen> {
         ),
       ),
     );
+  }
+
+  IconData _getQualityIcon(int quality) {
+    switch (quality) {
+      case 5:
+        return Icons.sentiment_very_satisfied;
+      case 4:
+        return Icons.sentiment_satisfied;
+      case 3:
+        return Icons.sentiment_neutral;
+      case 2:
+        return Icons.sentiment_dissatisfied;
+      case 1:
+        return Icons.sentiment_very_dissatisfied;
+      default:
+        return Icons.sentiment_neutral;
+    }
   }
 }

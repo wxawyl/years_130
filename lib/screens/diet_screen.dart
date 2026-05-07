@@ -6,6 +6,7 @@ import '../services/score_service.dart';
 import '../models/diet_record.dart';
 import '../models/knowledge_item.dart';
 import '../models/food_recognition_result.dart';
+import '../l10n/app_localizations.dart';
 import 'camera_recognition_screen.dart';
 
 class DietScreen extends StatefulWidget {
@@ -31,18 +32,6 @@ class _DietScreenState extends State<DietScreen> {
   double _totalProtein = 0;
   double _totalCarbs = 0;
   double _totalFat = 0;
-
-  final List<String> _mealTypes = ['早餐', '午餐', '晚餐', '零食'];
-  final List<Map<String, dynamic>> _quickFoods = [
-    {'name': '米饭', 'calories': 130, 'protein': 2.7, 'carbs': 28, 'fat': 0.3},
-    {'name': '鸡蛋', 'calories': 143, 'protein': 13, 'carbs': 1.1, 'fat': 10},
-    {'name': '牛奶', 'calories': 60, 'protein': 3.2, 'carbs': 5, 'fat': 3.2},
-    {'name': '苹果', 'calories': 52, 'protein': 0.3, 'carbs': 14, 'fat': 0.2},
-    {'name': '香蕉', 'calories': 91, 'protein': 1.1, 'carbs': 23, 'fat': 0.3},
-    {'name': '鸡胸肉', 'calories': 165, 'protein': 31, 'carbs': 0, 'fat': 3.6},
-    {'name': '西兰花', 'calories': 34, 'protein': 2.8, 'carbs': 7, 'fat': 0.4},
-    {'name': '燕麦', 'calories': 389, 'protein': 17, 'carbs': 66, 'fat': 7},
-  ];
 
   @override
   void initState() {
@@ -78,7 +67,7 @@ class _DietScreenState extends State<DietScreen> {
 
   Future<void> _saveRecord() async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    
+
     DietRecord record = DietRecord(
       date: today,
       mealType: _mealType,
@@ -92,11 +81,12 @@ class _DietScreenState extends State<DietScreen> {
 
     await _dbService.insertDietRecord(record);
     await _scoreService.calculateDailyScore(today);
-    
+
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('饮食记录保存成功！')),
+      SnackBar(content: Text(l10n.recordSaved)),
     );
-    
+
     _clearForm();
     await _loadTodayRecords();
   }
@@ -119,6 +109,7 @@ class _DietScreenState extends State<DietScreen> {
   }
 
   void _editRecord(DietRecord record) {
+    final l10n = AppLocalizations.of(context)!;
     _mealType = record.mealType;
     _foodNameController.text = record.foodName;
     _caloriesController.text = record.calories.toString();
@@ -126,56 +117,58 @@ class _DietScreenState extends State<DietScreen> {
     _carbsController.text = record.carbs.toString();
     _fatController.text = record.fat.toString();
     _servingsController.text = record.servings.toString();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('编辑饮食记录'),
+        title: Text(l10n.editDietRecord),
         content: SingleChildScrollView(
           child: Column(
             children: [
               DropdownButtonFormField<int>(
                 value: _mealType,
-                items: List.generate(4, (index) => DropdownMenuItem(
-                  value: index + 1,
-                  child: Text(_mealTypes[index]),
-                )),
+                items: [
+                  DropdownMenuItem(value: 1, child: Text(l10n.breakfast)),
+                  DropdownMenuItem(value: 2, child: Text(l10n.lunch)),
+                  DropdownMenuItem(value: 3, child: Text(l10n.dinner)),
+                  DropdownMenuItem(value: 4, child: Text(l10n.snack)),
+                ],
                 onChanged: (value) => setState(() => _mealType = value!),
-                decoration: const InputDecoration(labelText: '餐次'),
+                decoration: InputDecoration(labelText: l10n.mealType),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _foodNameController,
-                decoration: const InputDecoration(labelText: '食物名称'),
+                decoration: InputDecoration(labelText: l10n.foodName),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _caloriesController,
-                decoration: const InputDecoration(labelText: '卡路里'),
+                decoration: InputDecoration(labelText: l10n.calories),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _servingsController,
-                decoration: const InputDecoration(labelText: '份量'),
+                decoration: InputDecoration(labelText: l10n.servings),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _proteinController,
-                decoration: const InputDecoration(labelText: '蛋白质(g)'),
+                decoration: InputDecoration(labelText: l10n.protein),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _carbsController,
-                decoration: const InputDecoration(labelText: '碳水(g)'),
+                decoration: InputDecoration(labelText: l10n.carbs),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _fatController,
-                decoration: const InputDecoration(labelText: '脂肪(g)'),
+                decoration: InputDecoration(labelText: l10n.fat),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -187,7 +180,7 @@ class _DietScreenState extends State<DietScreen> {
               _clearForm();
               Navigator.pop(context);
             },
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -202,19 +195,19 @@ class _DietScreenState extends State<DietScreen> {
                 fat: double.tryParse(_fatController.text) ?? 0,
                 servings: double.tryParse(_servingsController.text) ?? 1,
               );
-              
+
               await _dbService.updateDietRecord(updatedRecord);
               await _scoreService.calculateDailyScore(record.date);
               await _loadTodayRecords();
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('记录更新成功！')),
+                SnackBar(content: Text(l10n.recordUpdated)),
               );
-              
+
               _clearForm();
               Navigator.pop(context);
             },
-            child: const Text('保存'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -222,29 +215,30 @@ class _DietScreenState extends State<DietScreen> {
   }
 
   void _deleteRecord(DietRecord record) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除 "${record.foodName}" 这条记录吗？'),
+        title: Text(l10n.confirmDelete),
+        content: Text(l10n.confirmDeleteMessage(record.foodName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
               await _dbService.deleteDietRecord(record.id!);
               await _scoreService.calculateDailyScore(record.date);
               await _loadTodayRecords();
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('记录已删除')),
+                SnackBar(content: Text(l10n.recordDeleted)),
               );
-              
+
               Navigator.pop(context);
             },
-            child: const Text('删除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -252,6 +246,7 @@ class _DietScreenState extends State<DietScreen> {
   }
 
   Future<void> _openCameraRecognition() async {
+    final l10n = AppLocalizations.of(context)!;
     await Navigator.push<bool>(
       context,
       MaterialPageRoute(
@@ -259,12 +254,12 @@ class _DietScreenState extends State<DietScreen> {
           onFoodConfirmed: (List<FoodRecognitionResult> foods, Map<String, int> servingsMap, String? imagePath) async {
             String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
             int totalCalories = 0;
-            
+
             for (var food in foods) {
               int servings = servingsMap[food.name] ?? 1;
               double calories = food.calorie * servings;
               totalCalories += calories.toInt();
-              
+
               DietRecord record = DietRecord(
                 date: today,
                 mealType: _mealType,
@@ -276,16 +271,16 @@ class _DietScreenState extends State<DietScreen> {
                 servings: servings.toDouble(),
                 foodImagePath: imagePath,
               );
-              
+
               await _dbService.insertDietRecord(record);
             }
-            
+
             await _scoreService.calculateDailyScore(today);
             await _loadTodayRecords();
-            
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('已识别 ${foods.length} 种食物，总计 $totalCalories kcal'),
+                content: Text(l10n.foodsRecognized(foods.length, totalCalories)),
                 backgroundColor: Colors.green,
               ),
             );
@@ -297,9 +292,22 @@ class _DietScreenState extends State<DietScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final List<String> mealTypes = [l10n.breakfast, l10n.lunch, l10n.dinner, l10n.snack];
+    final List<Map<String, dynamic>> quickFoods = [
+      {'name': '米饭', 'calories': 130, 'protein': 2.7, 'carbs': 28, 'fat': 0.3},
+      {'name': '鸡蛋', 'calories': 143, 'protein': 13, 'carbs': 1.1, 'fat': 10},
+      {'name': '牛奶', 'calories': 60, 'protein': 3.2, 'carbs': 5, 'fat': 3.2},
+      {'name': '苹果', 'calories': 52, 'protein': 0.3, 'carbs': 14, 'fat': 0.2},
+      {'name': '香蕉', 'calories': 91, 'protein': 1.1, 'carbs': 23, 'fat': 0.3},
+      {'name': '鸡胸肉', 'calories': 165, 'protein': 31, 'carbs': 0, 'fat': 3.6},
+      {'name': '西兰花', 'calories': 34, 'protein': 2.8, 'carbs': 7, 'fat': 0.4},
+      {'name': '燕麦', 'calories': 389, 'protein': 17, 'carbs': 66, 'fat': 7},
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('饮食管理'),
+        title: Text(l10n.diet),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -307,9 +315,9 @@ class _DietScreenState extends State<DietScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '今日摄入',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.todayIntake,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Card(
@@ -323,7 +331,7 @@ class _DietScreenState extends State<DietScreen> {
                       child: Column(
                         children: [
                           Text('${_totalCalories.toStringAsFixed(0)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                          const Text('卡路里'),
+                          Text(l10n.calories),
                         ],
                       ),
                     ),
@@ -331,7 +339,7 @@ class _DietScreenState extends State<DietScreen> {
                       child: Column(
                         children: [
                           Text('${_totalProtein.toStringAsFixed(1)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          const Text('蛋白质(g)'),
+                          Text(l10n.protein),
                         ],
                       ),
                     ),
@@ -339,7 +347,7 @@ class _DietScreenState extends State<DietScreen> {
                       child: Column(
                         children: [
                           Text('${_totalCarbs.toStringAsFixed(1)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          const Text('碳水(g)'),
+                          Text(l10n.carbs),
                         ],
                       ),
                     ),
@@ -347,7 +355,7 @@ class _DietScreenState extends State<DietScreen> {
                       child: Column(
                         children: [
                           Text('${_totalFat.toStringAsFixed(1)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          const Text('脂肪(g)'),
+                          Text(l10n.fat),
                         ],
                       ),
                     ),
@@ -380,21 +388,21 @@ class _DietScreenState extends State<DietScreen> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '拍照识别食物',
-                            style: TextStyle(
+                            l10n.photoRecognize,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.orange,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            'AI智能识别 · 自动计算卡路里',
-                            style: TextStyle(
+                            l10n.aiRecognition,
+                            style: const TextStyle(
                               fontSize: 12,
                               color: Colors.grey,
                             ),
@@ -413,16 +421,16 @@ class _DietScreenState extends State<DietScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              '快速添加食物',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.quickAddFood,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 4,
-              children: _quickFoods.map((food) {
+              children: quickFoods.map((food) {
                 return GestureDetector(
                   onTap: () => _selectQuickFood(food),
                   child: Card(
@@ -440,9 +448,9 @@ class _DietScreenState extends State<DietScreen> {
               }).toList(),
             ),
             const SizedBox(height: 20),
-            const Text(
-              '记录饮食',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.recordDiet,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Card(
@@ -456,13 +464,13 @@ class _DietScreenState extends State<DietScreen> {
                       children: [
                         const Icon(Icons.restaurant, color: Colors.orange),
                         const SizedBox(width: 8),
-                        const Text('餐次'),
+                        Text(l10n.mealType),
                         const Spacer(),
                         DropdownButton<int>(
                           value: _mealType,
                           items: List.generate(4, (index) => DropdownMenuItem(
                             value: index + 1,
-                            child: Text(_mealTypes[index]),
+                            child: Text(mealTypes[index]),
                           )),
                           onChanged: (value) => setState(() => _mealType = value!),
                         ),
@@ -471,9 +479,9 @@ class _DietScreenState extends State<DietScreen> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: _foodNameController,
-                      decoration: const InputDecoration(
-                        labelText: '食物名称',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.foodName,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -482,9 +490,9 @@ class _DietScreenState extends State<DietScreen> {
                         Expanded(
                           child: TextField(
                             controller: _caloriesController,
-                            decoration: const InputDecoration(
-                              labelText: '卡路里',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.calories,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
@@ -493,9 +501,9 @@ class _DietScreenState extends State<DietScreen> {
                         Expanded(
                           child: TextField(
                             controller: _servingsController,
-                            decoration: const InputDecoration(
-                              labelText: '份量',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.servings,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
@@ -508,9 +516,9 @@ class _DietScreenState extends State<DietScreen> {
                         Expanded(
                           child: TextField(
                             controller: _proteinController,
-                            decoration: const InputDecoration(
-                              labelText: '蛋白质(g)',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.protein,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
@@ -519,9 +527,9 @@ class _DietScreenState extends State<DietScreen> {
                         Expanded(
                           child: TextField(
                             controller: _carbsController,
-                            decoration: const InputDecoration(
-                              labelText: '碳水(g)',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.carbs,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
@@ -530,9 +538,9 @@ class _DietScreenState extends State<DietScreen> {
                         Expanded(
                           child: TextField(
                             controller: _fatController,
-                            decoration: const InputDecoration(
-                              labelText: '脂肪(g)',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.fat,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
@@ -547,20 +555,20 @@ class _DietScreenState extends State<DietScreen> {
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('保存记录', style: TextStyle(fontSize: 16)),
+                      child: Text(l10n.saveRecord, style: const TextStyle(fontSize: 16)),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              '今日记录',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.todayRecords,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             _todayRecords.isEmpty
-                ? const Center(child: Text('暂无今日饮食记录'))
+                ? Center(child: Text(l10n.noRecordsToday))
                 : ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -573,13 +581,13 @@ class _DietScreenState extends State<DietScreen> {
                           extentRatio: 0.25,
                           children: [
                             SlidableAction(
-                              label: '编辑',
+                              label: l10n.edit,
                               backgroundColor: Colors.blue,
                               icon: Icons.edit,
                               onPressed: (context) => _editRecord(record),
                             ),
                             SlidableAction(
-                              label: '删除',
+                              label: l10n.delete,
                               backgroundColor: Colors.red,
                               icon: Icons.delete,
                               onPressed: (context) => _deleteRecord(record),
@@ -590,7 +598,7 @@ class _DietScreenState extends State<DietScreen> {
                           child: ListTile(
                             title: Text('${record.mealTypeName}: ${record.foodName}'),
                             subtitle: Text(
-                              '${record.calories * record.servings} kcal | ${record.protein * record.servings}g蛋白质',
+                              '${record.calories * record.servings} kcal | ${record.protein * record.servings}g${l10n.protein}',
                             ),
                             trailing: Text('x${record.servings}'),
                           ),
@@ -599,9 +607,9 @@ class _DietScreenState extends State<DietScreen> {
                     },
                   ),
             const SizedBox(height: 20),
-            const Text(
-              '饮食科普',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.dietEducation,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             ListView.builder(
@@ -613,7 +621,7 @@ class _DietScreenState extends State<DietScreen> {
                 return Card(
                   child: ExpansionTile(
                     title: Text(item.title),
-                    subtitle: Text('来源: ${item.source}'),
+                    subtitle: Text('${l10n.source}: ${item.source}'),
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(16),

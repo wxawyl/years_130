@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../models/exercise_record.dart';
 import '../models/knowledge_item.dart';
+import '../l10n/app_localizations.dart';
 
 class ExerciseScreen extends StatefulWidget {
   const ExerciseScreen({super.key});
@@ -16,36 +16,29 @@ class ExerciseScreen extends StatefulWidget {
 class _ExerciseScreenState extends State<ExerciseScreen> {
   final _dbService = DatabaseService();
   final _scoreService = ScoreService();
-  int _type = 1;
-  final _subTypeController = TextEditingController();
-  final _durationController = TextEditingController();
-  int _intensity = 3;
-  final _caloriesController = TextEditingController();
-  final _stepsController = TextEditingController();
-  List<KnowledgeItem> _knowledgeItems = [];
   List<ExerciseRecord> _todayRecords = [];
-  int _totalDuration = 0;
-  double _totalCalories = 0;
-  int _totalSteps = 0;
-
-  final List<String> _exerciseTypes = ['有氧运动', '力量训练', '柔韧性训练', '日常活动'];
-  final List<String> _intensityLevels = ['低强度', '中低强度', '中等强度', '中高强度', '高强度'];
-  final List<Map<String, dynamic>> _quickExercises = [
-    {'name': '跑步', 'type': 1, 'duration': 30, 'intensity': 4, 'calories': 300},
-    {'name': '游泳', 'type': 1, 'duration': 45, 'intensity': 3, 'calories': 400},
-    {'name': '瑜伽', 'type': 3, 'duration': 60, 'intensity': 2, 'calories': 200},
-    {'name': '哑铃训练', 'type': 2, 'duration': 40, 'intensity': 4, 'calories': 250},
-    {'name': '散步', 'type': 1, 'duration': 30, 'intensity': 1, 'calories': 100},
-    {'name': '跳绳', 'type': 1, 'duration': 15, 'intensity': 5, 'calories': 200},
-    {'name': '俯卧撑', 'type': 2, 'duration': 10, 'intensity': 4, 'calories': 50},
-    {'name': '拉伸', 'type': 3, 'duration': 15, 'intensity': 1, 'calories': 30},
+  List<KnowledgeItem> _knowledgeItems = [];
+  int _exerciseType = 1;
+  int _duration = 30;
+  double _caloriesBurned = 0;
+  final List<Map<String, dynamic>> _exerciseTypes = [
+    {'name': 'walking', 'icon': Icons.directions_walk, 'calories': 5.5},
+    {'name': 'running', 'icon': Icons.directions_run, 'calories': 10},
+    {'name': 'cycling', 'icon': Icons.directions_bike, 'calories': 8},
+    {'name': 'swimming', 'icon': Icons.pool, 'calories': 9},
+    {'name': 'yoga', 'icon': Icons.self_improvement, 'calories': 3.5},
+    {'name': 'gym', 'icon': Icons.fitness_center, 'calories': 7},
   ];
 
   @override
   void initState() {
     super.initState();
-    _loadKnowledge();
-    _loadTodayRecords();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _loadKnowledge();
+    await _loadTodayRecords();
   }
 
   Future<void> _loadKnowledge() async {
@@ -56,204 +49,62 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   Future<void> _loadTodayRecords() async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     _todayRecords = await _dbService.getExerciseRecords(today);
-    _calculateTotals();
     setState(() {});
   }
 
-  void _calculateTotals() {
-    _totalDuration = 0;
-    _totalCalories = 0;
-    _totalSteps = 0;
-    for (var record in _todayRecords) {
-      _totalDuration += record.duration;
-      _totalCalories += record.caloriesBurned;
-      _totalSteps += record.steps ?? 0;
+  void _updateCalories() {
+    double caloriesPerMinute = _exerciseTypes[_exerciseType - 1]['calories'];
+    setState(() {
+      _caloriesBurned = caloriesPerMinute * _duration;
+    });
+  }
+
+  String _getExerciseName(int type, AppLocalizations l10n) {
+    switch (type) {
+      case 1:
+        return l10n.walking;
+      case 2:
+        return l10n.running;
+      case 3:
+        return l10n.cycling;
+      case 4:
+        return l10n.swimming;
+      case 5:
+        return l10n.yoga;
+      case 6:
+        return l10n.gym;
+      default:
+        return l10n.walking;
     }
   }
 
   Future<void> _saveRecord() async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    
+
     ExerciseRecord record = ExerciseRecord(
       date: today,
-      type: _type,
-      subType: _subTypeController.text,
-      duration: int.tryParse(_durationController.text) ?? 0,
-      intensity: _intensity,
-      caloriesBurned: double.tryParse(_caloriesController.text) ?? 0,
-      steps: int.tryParse(_stepsController.text),
+      exerciseType: _exerciseType,
+      duration: _duration,
+      caloriesBurned: _caloriesBurned,
     );
 
     await _dbService.insertExerciseRecord(record);
     await _scoreService.calculateDailyScore(today);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('运动记录保存成功！')),
-    );
-    
-    _clearForm();
     await _loadTodayRecords();
-  }
 
-  void _clearForm() {
-    _subTypeController.clear();
-    _durationController.clear();
-    _intensity = 3;
-    _caloriesController.clear();
-    _stepsController.clear();
-  }
-
-  void _selectQuickExercise(Map<String, dynamic> exercise) {
-    _type = exercise['type'];
-    _subTypeController.text = exercise['name'];
-    _durationController.text = exercise['duration'].toString();
-    _intensity = exercise['intensity'];
-    _caloriesController.text = exercise['calories'].toString();
-    setState(() {});
-  }
-
-  void _editRecord(ExerciseRecord record) {
-    _type = record.type;
-    _subTypeController.text = record.subType ?? '';
-    _durationController.text = record.duration.toString();
-    _intensity = record.intensity;
-    _caloriesController.text = record.caloriesBurned.toString();
-    _stepsController.text = record.steps?.toString() ?? '';
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('编辑运动记录'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              DropdownButtonFormField<int>(
-                value: _type,
-                items: List.generate(4, (index) => DropdownMenuItem(
-                  value: index + 1,
-                  child: Text(_exerciseTypes[index]),
-                )),
-                onChanged: (value) => setState(() => _type = value!),
-                decoration: const InputDecoration(labelText: '运动类型'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _subTypeController,
-                decoration: const InputDecoration(labelText: '运动项目'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _durationController,
-                decoration: const InputDecoration(labelText: '运动时长（分钟）'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Text('运动强度'),
-                  const Spacer(),
-                  Row(
-                    children: List.generate(5, (index) {
-                      return IconButton(
-                        icon: Icon(
-                          Icons.local_fire_department,
-                          color: index < _intensity ? Colors.orange : Colors.grey,
-                        ),
-                        onPressed: () => setState(() => _intensity = index + 1),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _caloriesController,
-                decoration: const InputDecoration(labelText: '消耗卡路里'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _stepsController,
-                decoration: const InputDecoration(labelText: '步数（可选）'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _clearForm();
-              Navigator.pop(context);
-            },
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              ExerciseRecord updatedRecord = ExerciseRecord(
-                id: record.id,
-                date: record.date,
-                type: _type,
-                subType: _subTypeController.text,
-                duration: int.tryParse(_durationController.text) ?? 0,
-                intensity: _intensity,
-                caloriesBurned: double.tryParse(_caloriesController.text) ?? 0,
-                steps: int.tryParse(_stepsController.text),
-              );
-              
-              await _dbService.updateExerciseRecord(updatedRecord);
-              await _scoreService.calculateDailyScore(record.date);
-              await _loadTodayRecords();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('记录更新成功！')),
-              );
-              
-              _clearForm();
-              Navigator.pop(context);
-            },
-            child: const Text('保存'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _deleteRecord(ExerciseRecord record) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除 "${record.subType}" 这条运动记录吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _dbService.deleteExerciseRecord(record.id!);
-              await _scoreService.calculateDailyScore(record.date);
-              await _loadTodayRecords();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('记录已删除')),
-              );
-              
-              Navigator.pop(context);
-            },
-            child: const Text('删除'),
-          ),
-        ],
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.exerciseRecordSaved)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('运动管理'),
+        title: Text(l10n.exerciseManagement),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -261,79 +112,62 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '今日运动',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text('${_totalDuration}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                          const Text('分钟'),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text('${_totalCalories.toStringAsFixed(0)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          const Text('卡路里'),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text('${_totalSteps}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          const Text('步数'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              '快速选择运动',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.exerciseType,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 4,
-              children: _quickExercises.map((exercise) {
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.1,
+              children: List.generate(_exerciseTypes.length, (index) {
+                int type = index + 1;
+                bool isSelected = _exerciseType == type;
                 return GestureDetector(
-                  onTap: () => _selectQuickExercise(exercise),
+                  onTap: () {
+                    setState(() => _exerciseType = type);
+                    _updateCalories();
+                  },
                   child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        children: [
-                          Text(exercise['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Text('${exercise['duration']}分钟', style: const TextStyle(fontSize: 10)),
-                        ],
-                      ),
+                    elevation: isSelected ? 8 : 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: isSelected
+                          ? const BorderSide(color: Color(0xFF42A5F5), width: 2)
+                          : BorderSide.none,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _exerciseTypes[index]['icon'],
+                          size: 36,
+                          color: isSelected ? const Color(0xFF42A5F5) : Colors.grey,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _getExerciseName(type, l10n),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? const Color(0xFF42A5F5) : Colors.grey[700],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ),
             const SizedBox(height: 20),
-            const Text(
-              '记录运动',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.duration,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -343,159 +177,128 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.directions_run, color: Colors.blue),
-                        const SizedBox(width: 8),
-                        const Text('运动类型'),
-                        const Spacer(),
-                        DropdownButton<int>(
-                          value: _type,
-                          items: List.generate(4, (index) => DropdownMenuItem(
-                            value: index + 1,
-                            child: Text(_exerciseTypes[index]),
-                          )),
-                          onChanged: (value) => setState(() => _type = value!),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _subTypeController,
-                      decoration: const InputDecoration(
-                        labelText: '运动项目',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.timer, color: Colors.green),
-                        const SizedBox(width: 8),
-                        const Text('运动时长'),
-                        const Spacer(),
-                        SizedBox(
-                          width: 120,
-                          child: TextField(
-                            controller: _durationController,
-                            decoration: const InputDecoration(
-                              hintText: '30',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('分钟'),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.local_fire_department, color: Colors.orange),
-                        const SizedBox(width: 8),
-                        const Text('运动强度'),
-                        const Spacer(),
-                        Row(
-                          children: List.generate(5, (index) {
-                            return IconButton(
-                              icon: Icon(
-                                Icons.local_fire_department,
-                                color: index < _intensity ? Colors.orange : Colors.grey,
-                              ),
-                              onPressed: () => setState(() => _intensity = index + 1),
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _caloriesController,
-                            decoration: const InputDecoration(
-                              labelText: '消耗卡路里',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _stepsController,
-                            decoration: const InputDecoration(
-                              labelText: '步数（可选）',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
+                        const Icon(Icons.timer, color: Color(0xFF42A5F5), size: 32),
+                        const SizedBox(width: 16),
+                        Text(
+                          '$_duration ${l10n.minutes}',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF42A5F5),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _saveRecord,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF42A5F5),
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text('保存记录', style: TextStyle(fontSize: 16)),
+                    Slider(
+                      value: _duration.toDouble(),
+                      min: 5,
+                      max: 180,
+                      divisions: 35,
+                      activeColor: const Color(0xFF42A5F5),
+                      onChanged: (value) {
+                        setState(() => _duration = value.toInt());
+                        _updateCalories();
+                      },
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('5 ${l10n.minutes}'),
+                        Text('180 ${l10n.minutes}'),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              '今日记录',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.caloriesBurned,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.local_fire_department, color: Colors.orange, size: 40),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${_caloriesBurned.toStringAsFixed(0)} kcal',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _saveRecord,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF42A5F5),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(l10n.recordExercise, style: const TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              l10n.todayRecords,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             _todayRecords.isEmpty
-                ? const Center(child: Text('暂无今日运动记录'))
+                ? Center(child: Text(l10n.noExerciseRecords))
                 : ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: _todayRecords.length,
                     itemBuilder: (context, index) {
                       var record = _todayRecords[index];
-                      return Slidable(
-                        endActionPane: ActionPane(
-                          motion: const DrawerMotion(),
-                          extentRatio: 0.25,
-                          children: [
-                            SlidableAction(
-                              label: '编辑',
-                              backgroundColor: Colors.blue,
-                              icon: Icons.edit,
-                              onPressed: (context) => _editRecord(record),
+                      return Card(
+                        child: ListTile(
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF42A5F5).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            SlidableAction(
-                              label: '删除',
-                              backgroundColor: Colors.red,
-                              icon: Icons.delete,
-                              onPressed: (context) => _deleteRecord(record),
+                            child: Icon(
+                              _exerciseTypes[record.exerciseType - 1]['icon'],
+                              color: const Color(0xFF42A5F5),
                             ),
-                          ],
-                        ),
-                        child: Card(
-                          child: ListTile(
-                            title: Text('${record.typeName}: ${record.subType}'),
-                            subtitle: Text(
-                              '${record.duration}分钟 | ${record.intensityName} | ${record.caloriesBurned}卡路里',
-                            ),
-                            trailing: record.steps != null ? Text('${record.steps}步') : null,
+                          ),
+                          title: Text(_getExerciseName(record.exerciseType, l10n)),
+                          subtitle: Text('${record.duration} ${l10n.minutes}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.local_fire_department, color: Colors.orange, size: 20),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${record.caloriesBurned.toStringAsFixed(0)} kcal',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ),
                       );
                     },
                   ),
             const SizedBox(height: 20),
-            const Text(
-              '运动科普',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.exerciseEducation,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             ListView.builder(
@@ -507,7 +310,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                 return Card(
                   child: ExpansionTile(
                     title: Text(item.title),
-                    subtitle: Text('来源: ${item.source}'),
+                    subtitle: Text('${l10n.source}: ${item.source}'),
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(16),

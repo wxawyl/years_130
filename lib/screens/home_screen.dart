@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../services/score_service.dart';
+import '../services/locale_service.dart';
 import '../models/daily_score.dart';
 import '../widgets/score_card.dart';
 import '../widgets/quick_action_button.dart';
 import '../widgets/suggestion_card.dart';
+import '../l10n/app_localizations.dart';
 import 'sleep_screen.dart';
 import 'diet_screen.dart';
 import 'exercise_screen.dart';
@@ -32,15 +35,60 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  String _getScoreMessage(double score, AppLocalizations l10n) {
+    if (score >= 80) return l10n.veryGood;
+    if (score >= 60) return l10n.good;
+    if (score >= 40) return l10n.needsWork;
+    return l10n.takeCare;
+  }
+
+  Color _getScoreColor(double score) {
+    if (score >= 80) return const Color(0xFF66BB6A);
+    if (score >= 60) return const Color(0xFFFFCA28);
+    if (score >= 40) return const Color(0xFFFF7043);
+    return const Color(0xFFEF5350);
+  }
+
+  void _showLanguageSelector(BuildContext context) {
+    final localeService = Provider.of<LocaleService>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.selectLanguage),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: LocaleService.supportedLocales.map((locale) {
+            return ListTile(
+              title: Text(LocaleService.getLanguageName(locale.languageCode)),
+              trailing: localeService.locale == locale
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () {
+                localeService.setLocale(locale);
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    String today = DateFormat('yyyy年MM月dd日 EEEE').format(DateTime.now());
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('活到130岁'),
+        title: Text(l10n.appTitle),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.language),
+            onPressed: () => _showLanguageSelector(context),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _refreshScore,
@@ -53,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              today,
+              DateFormat('yyyy年MM月dd日 EEEE').format(DateTime.now()),
               style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
@@ -65,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
 
                 if (snapshot.hasError || snapshot.data == null) {
-                  return const Text('加载失败，请重试');
+                  return Text(l10n.loadingFailed);
                 }
 
                 DailyScore score = snapshot.data!;
@@ -83,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           children: [
                             Text(
-                              '今日健康评分',
+                              l10n.todayHealthScore,
                               style: const TextStyle(fontSize: 16, color: Color(0xFF757575)),
                             ),
                             const SizedBox(height: 16),
@@ -116,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              _getScoreMessage(score.totalScore),
+                              _getScoreMessage(score.totalScore, l10n),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -128,9 +176,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      '四大维度',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Text(
+                      l10n.fourDimensions,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     GridView.count(
@@ -141,25 +189,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisSpacing: 12,
                       children: [
                         ScoreCard(
-                          title: '睡眠',
+                          title: l10n.sleep,
                           score: score.sleepScore,
                           icon: Icons.bed,
                           color: const Color(0xFF66BB6A),
                         ),
                         ScoreCard(
-                          title: '饮食',
+                          title: l10n.diet,
                           score: score.dietScore,
                           icon: Icons.food_bank,
                           color: const Color(0xFFFF7043),
                         ),
                         ScoreCard(
-                          title: '运动',
+                          title: l10n.exercise,
                           score: score.exerciseScore,
                           icon: Icons.directions_run,
                           color: const Color(0xFF42A5F5),
                         ),
                         ScoreCard(
-                          title: '心态',
+                          title: l10n.mood,
                           score: score.moodScore,
                           icon: Icons.sentiment_satisfied,
                           color: const Color(0xFFFFCA28),
@@ -173,9 +221,9 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             const SizedBox(height: 20),
-            const Text(
-              '快速记录',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.quickRecord,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             GridView.count(
@@ -186,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSpacing: 12,
               children: [
                 QuickActionButton(
-                  title: '睡眠',
+                  title: l10n.sleep,
                   icon: Icons.bed,
                   color: const Color(0xFF66BB6A),
                   onTap: () => Navigator.push(
@@ -195,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 QuickActionButton(
-                  title: '饮食',
+                  title: l10n.diet,
                   icon: Icons.food_bank,
                   color: const Color(0xFFFF7043),
                   onTap: () => Navigator.push(
@@ -204,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 QuickActionButton(
-                  title: '运动',
+                  title: l10n.exercise,
                   icon: Icons.directions_run,
                   color: const Color(0xFF42A5F5),
                   onTap: () => Navigator.push(
@@ -213,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 QuickActionButton(
-                  title: '心态',
+                  title: l10n.mood,
                   icon: Icons.sentiment_satisfied,
                   color: const Color(0xFFFFCA28),
                   onTap: () => Navigator.push(
@@ -228,12 +276,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '首页'),
-          BottomNavigationBarItem(icon: Icon(Icons.bed), label: '睡眠'),
-          BottomNavigationBarItem(icon: Icon(Icons.food_bank), label: '饮食'),
-          BottomNavigationBarItem(icon: Icon(Icons.directions_run), label: '运动'),
-          BottomNavigationBarItem(icon: Icon(Icons.sentiment_satisfied), label: '心态'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.home), label: l10n.home),
+          BottomNavigationBarItem(icon: const Icon(Icons.bed), label: l10n.sleep),
+          BottomNavigationBarItem(icon: const Icon(Icons.food_bank), label: l10n.diet),
+          BottomNavigationBarItem(icon: const Icon(Icons.directions_run), label: l10n.exercise),
+          BottomNavigationBarItem(icon: const Icon(Icons.sentiment_satisfied), label: l10n.mood),
         ],
         onTap: (index) {
           switch (index) {
@@ -253,19 +301,5 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
-  }
-
-  Color _getScoreColor(double score) {
-    if (score >= 80) return const Color(0xFF66BB6A);
-    if (score >= 60) return const Color(0xFFFFCA28);
-    if (score >= 40) return const Color(0xFFFF7043);
-    return const Color(0xFFEF5350);
-  }
-
-  String _getScoreMessage(double score) {
-    if (score >= 80) return '🎉 非常棒！继续保持健康生活！';
-    if (score >= 60) return '👍 不错！还有提升空间';
-    if (score >= 40) return '💪 加油！需要更加努力';
-    return '😅 今天也要好好照顾自己哦';
   }
 }

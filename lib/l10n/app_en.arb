@@ -1,0 +1,407 @@
+{
+  "@@locale": "en",
+  "appTitle": "Live to 130",
+  "@appTitle": {
+    "description": "App title"
+  },
+  "todayHealthScore": "Today's Health Score",
+  "@todayHealthScore": {
+    "description": "Today health score label"
+  },
+  "loadingFailed": "Loading failed, please retry",
+  "@loadingFailed": {
+    "description": "Loading failed message"
+  },
+  "fourDimensions": "Four Dimensions",
+  "@fourDimensions": {
+    "description": "Four dimensions section title"
+  },
+  "sleep": "Sleep",
+  "@sleep": {
+    "description": "Sleep dimension"
+  },
+  "diet": "Diet",
+  "@diet": {
+    "description": "Diet dimension"
+  },
+  "exercise": "Exercise",
+  "@exercise": {
+    "description": "Exercise dimension"
+  },
+  "mood": "Mood",
+  "@mood": {
+    "description": "Mood dimension"
+  },
+  "quickRecord": "Quick Record",
+  "@quickRecord": {
+    "description": "Quick record section title"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home tab label"
+  },
+  "veryGood": "🎉 Excellent! Keep up the healthy lifestyle!",
+  "@veryGood": {
+    "description": "Score message for >=80"
+  },
+  "good": "👍 Good! There's room for improvement",
+  "@good": {
+    "description": "Score message for >=60"
+  },
+  "needsWork": "💪 Come on! Need to work harder",
+  "@needsWork": {
+    "description": "Score message for >=40"
+  },
+  "takeCare": "😅 Take good care of yourself today too",
+  "@takeCare": {
+    "description": "Score message for <40"
+  },
+  "todayIntake": "Today's Intake",
+  "@todayIntake": {
+    "description": "Today intake section title"
+  },
+  "calories": "Calories",
+  "@calories": {
+    "description": "Calories label"
+  },
+  "protein": "Protein(g)",
+  "@protein": {
+    "description": "Protein label"
+  },
+  "carbs": "Carbs(g)",
+  "@carbs": {
+    "description": "Carbs label"
+  },
+  "fat": "Fat(g)",
+  "@fat": {
+    "description": "Fat label"
+  },
+  "photoRecognize": "Take Photo to Recognize Food",
+  "@photoRecognize": {
+    "description": "Photo recognition button"
+  },
+  "aiRecognition": "AI Smart Recognition · Auto Calculate Calories",
+  "@aiRecognition": {
+    "description": "AI recognition subtitle"
+  },
+  "quickAddFood": "Quick Add Food",
+  "@quickAddFood": {
+    "description": "Quick add food section title"
+  },
+  "recordDiet": "Record Diet",
+  "@recordDiet": {
+    "description": "Record diet section title"
+  },
+  "mealType": "Meal Type",
+  "@mealType": {
+    "description": "Meal type label"
+  },
+  "breakfast": "Breakfast",
+  "@breakfast": {
+    "description": "Breakfast meal type"
+  },
+  "lunch": "Lunch",
+  "@lunch": {
+    "description": "Lunch meal type"
+  },
+  "dinner": "Dinner",
+  "@dinner": {
+    "description": "Dinner meal type"
+  },
+  "snack": "Snack",
+  "@snack": {
+    "description": "Snack meal type"
+  },
+  "foodName": "Food Name",
+  "@foodName": {
+    "description": "Food name field label"
+  },
+  "servings": "Servings",
+  "@servings": {
+    "description": "Servings field label"
+  },
+  "saveRecord": "Save Record",
+  "@saveRecord": {
+    "description": "Save record button"
+  },
+  "todayRecords": "Today's Records",
+  "@todayRecords": {
+    "description": "Today's records section title"
+  },
+  "noRecordsToday": "No diet records for today",
+  "@noRecordsToday": {
+    "description": "No records message"
+  },
+  "dietEducation": "Diet Education",
+  "@dietEducation": {
+    "description": "Diet education section title"
+  },
+  "source": "Source",
+  "@source": {
+    "description": "Source label"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button"
+  },
+  "confirmDelete": "Confirm Delete",
+  "@confirmDelete": {
+    "description": "Confirm delete dialog title"
+  },
+  "confirmDeleteMessage": "Are you sure you want to delete \"{foodName}\" record?",
+  "@confirmDeleteMessage": {
+    "description": "Confirm delete message",
+    "placeholders": {
+      "foodName": {
+        "type": "String",
+        "example": "Rice"
+      }
+    }
+  },
+  "recordSaved": "Diet record saved successfully!",
+  "@recordSaved": {
+    "description": "Record saved message"
+  },
+  "recordUpdated": "Record updated successfully!",
+  "@recordUpdated": {
+    "description": "Record updated message"
+  },
+  "recordDeleted": "Record deleted",
+  "@recordDeleted": {
+    "description": "Record deleted message"
+  },
+  "foodsRecognized": "{count} types of food recognized, total {calories} kcal",
+  "@foodsRecognized": {
+    "description": "Foods recognized message",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      },
+      "calories": {
+        "type": "int",
+        "example": "500"
+      }
+    }
+  },
+  "editDietRecord": "Edit Diet Record",
+  "@editDietRecord": {
+    "description": "Edit diet record dialog title"
+  },
+  "sleepManagement": "Sleep Management",
+  "@sleepManagement": {
+    "description": "Sleep screen title"
+  },
+  "sleepDuration": "Sleep Duration",
+  "@sleepDuration": {
+    "description": "Sleep duration label"
+  },
+  "sleepQuality": "Sleep Quality",
+  "@sleepQuality": {
+    "description": "Sleep quality label"
+  },
+  "bedtime": "Bedtime",
+  "@bedtime": {
+    "description": "Bedtime label"
+  },
+  "wakeTime": "Wake Time",
+  "@wakeTime": {
+    "description": "Wake time label"
+  },
+  "hours": "hours",
+  "@hours": {
+    "description": "Hours unit"
+  },
+  "recordSleep": "Record Sleep",
+  "@recordSleep": {
+    "description": "Record sleep button"
+  },
+  "sleepRecordSaved": "Sleep record saved successfully!",
+  "@sleepRecordSaved": {
+    "description": "Sleep record saved message"
+  },
+  "noSleepRecords": "No sleep records for today",
+  "@noSleepRecords": {
+    "description": "No sleep records message"
+  },
+  "sleepEducation": "Sleep Education",
+  "@sleepEducation": {
+    "description": "Sleep education section title"
+  },
+  "exerciseManagement": "Exercise Management",
+  "@exerciseManagement": {
+    "description": "Exercise screen title"
+  },
+  "exerciseType": "Exercise Type",
+  "@exerciseType": {
+    "description": "Exercise type label"
+  },
+  "duration": "Duration",
+  "@duration": {
+    "description": "Duration label"
+  },
+  "minutes": "minutes",
+  "@minutes": {
+    "description": "Minutes unit"
+  },
+  "caloriesBurned": "Calories Burned",
+  "@caloriesBurned": {
+    "description": "Calories burned label"
+  },
+  "recordExercise": "Record Exercise",
+  "@recordExercise": {
+    "description": "Record exercise button"
+  },
+  "exerciseRecordSaved": "Exercise record saved successfully!",
+  "@exerciseRecordSaved": {
+    "description": "Exercise record saved message"
+  },
+  "noExerciseRecords": "No exercise records for today",
+  "@noExerciseRecords": {
+    "description": "No exercise records message"
+  },
+  "exerciseEducation": "Exercise Education",
+  "@exerciseEducation": {
+    "description": "Exercise education section title"
+  },
+  "walking": "Walking",
+  "@walking": {
+    "description": "Walking exercise"
+  },
+  "running": "Running",
+  "@running": {
+    "description": "Running exercise"
+  },
+  "cycling": "Cycling",
+  "@cycling": {
+    "description": "Cycling exercise"
+  },
+  "swimming": "Swimming",
+  "@swimming": {
+    "description": "Swimming exercise"
+  },
+  "yoga": "Yoga",
+  "@yoga": {
+    "description": "Yoga exercise"
+  },
+  "gym": "Gym",
+  "@gym": {
+    "description": "Gym exercise"
+  },
+  "moodManagement": "Mood Management",
+  "@moodManagement": {
+    "description": "Mood screen title"
+  },
+  "moodLevel": "Mood Level",
+  "@moodLevel": {
+    "description": "Mood level label"
+  },
+  "note": "Note",
+  "@note": {
+    "description": "Note label"
+  },
+  "recordMood": "Record Mood",
+  "@recordMood": {
+    "description": "Record mood button"
+  },
+  "moodRecordSaved": "Mood record saved successfully!",
+  "@moodRecordSaved": {
+    "description": "Mood record saved message"
+  },
+  "noMoodRecords": "No mood records for today",
+  "@noMoodRecords": {
+    "description": "No mood records message"
+  },
+  "moodEducation": "Mood Education",
+  "@moodEducation": {
+    "description": "Mood education section title"
+  },
+  "veryHappy": "Very Happy",
+  "@veryHappy": {
+    "description": "Very happy mood"
+  },
+  "happy": "Happy",
+  "@happy": {
+    "description": "Happy mood"
+  },
+  "normal": "Normal",
+  "@normal": {
+    "description": "Normal mood"
+  },
+  "sad": "Sad",
+  "@sad": {
+    "description": "Sad mood"
+  },
+  "verySad": "Very Sad",
+  "@verySad": {
+    "description": "Very sad mood"
+  },
+  "meditationMusic": "Meditation Music",
+  "@meditationMusic": {
+    "description": "Meditation music screen title"
+  },
+  "presetMusic": "Preset Music",
+  "@presetMusic": {
+    "description": "Preset music section"
+  },
+  "startMeditation": "Start Meditation",
+  "@startMeditation": {
+    "description": "Start meditation button"
+  },
+  "stopMeditation": "Stop Meditation",
+  "@stopMeditation": {
+    "description": "Stop meditation button"
+  },
+  "nowPlaying": "Now Playing",
+  "@nowPlaying": {
+    "description": "Now playing label"
+  },
+  "playFailed": "Playback failed, please retry",
+  "@playFailed": {
+    "description": "Play failed message"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language label"
+  },
+  "chinese": "简体中文",
+  "@chinese": {
+    "description": "Chinese language"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language"
+  },
+  "japanese": "日本語",
+  "@japanese": {
+    "description": "Japanese language"
+  },
+  "korean": "한국어",
+  "@korean": {
+    "description": "Korean language"
+  },
+  "spanish": "Español",
+  "@spanish": {
+    "description": "Spanish language"
+  },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Select language dialog title"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings title"
+  }
+}

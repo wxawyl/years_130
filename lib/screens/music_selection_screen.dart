@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../models/meditation_music.dart';
 import '../services/music_service.dart';
 import '../services/audio_player_service.dart';
+import '../l10n/app_localizations.dart';
 
 class MusicSelectionScreen extends StatefulWidget {
   const MusicSelectionScreen({super.key});
@@ -69,6 +70,8 @@ class _MusicSelectionScreenState extends State<MusicSelectionScreen> {
   }
 
   Future<void> _playMusic(MeditationMusic music) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_selectedMusic?.id == music.id && _isPlaying) {
       await _audioPlayer.pause();
       setState(() {});
@@ -83,8 +86,8 @@ class _MusicSelectionScreenState extends State<MusicSelectionScreen> {
     } catch (e) {
       print('播放失败: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('播放失败，请重试'),
+        SnackBar(
+          content: Text(l10n.playFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -121,14 +124,16 @@ class _MusicSelectionScreenState extends State<MusicSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('选择冥想音乐'),
+        title: Text(l10n.meditationMusic),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          if (_selectedMusic != null) _buildNowPlayingBar(),
+          if (_selectedMusic != null) _buildNowPlayingBar(l10n),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -179,7 +184,7 @@ class _MusicSelectionScreenState extends State<MusicSelectionScreen> {
     );
   }
 
-  Widget _buildNowPlayingBar() {
+  Widget _buildNowPlayingBar(AppLocalizations l10n) {
     return Card(
       elevation: 4,
       margin: const EdgeInsets.all(16),
