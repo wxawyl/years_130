@@ -1,0 +1,17 @@
+workflows:
+  ios-release:
+    name: iOS Release Build
+    environment:
+      flutter: 3.10.0
+      xcode: 14.3
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: |
+          flutter pub get
+      - name: Build iOS Release
+        script: |
+          flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/Runner.app
+      - build/ios/iphoneos/Runner.ipa
