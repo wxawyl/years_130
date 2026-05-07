@@ -1,7 +1,7 @@
 class SleepRecord {
   int? id;
   String date;
-  String? bedTime;
+  String? bedtime;
   String? wakeTime;
   double? duration;
   int? quality;
@@ -12,7 +12,7 @@ class SleepRecord {
   SleepRecord({
     this.id,
     required this.date,
-    this.bedTime,
+    this.bedtime,
     this.wakeTime,
     this.duration,
     this.quality,
@@ -25,7 +25,7 @@ class SleepRecord {
     return {
       'id': id,
       'date': date,
-      'bed_time': bedTime,
+      'bed_time': bedtime,
       'wake_time': wakeTime,
       'duration': duration,
       'quality': quality,
@@ -39,7 +39,7 @@ class SleepRecord {
     return SleepRecord(
       id: map['id'] as int?,
       date: map['date'] as String,
-      bedTime: map['bed_time'] as String?,
+      bedtime: map['bed_time'] as String?,
       wakeTime: map['wake_time'] as String?,
       duration: map['duration'] as double?,
       quality: map['quality'] as int?,

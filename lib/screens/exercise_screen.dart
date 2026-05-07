@@ -84,7 +84,9 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
     ExerciseRecord record = ExerciseRecord(
       date: today,
       exerciseType: _exerciseType,
+      subType: '',
       duration: _duration,
+      intensity: 3,
       caloriesBurned: _caloriesBurned,
     );
 

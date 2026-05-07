@@ -1,7 +1,7 @@
 class ExerciseRecord {
   int? id;
   String date;
-  int type;
+  int exerciseType;
   String subType;
   int duration;
   int intensity;
@@ -12,7 +12,7 @@ class ExerciseRecord {
   ExerciseRecord({
     this.id,
     required this.date,
-    required this.type,
+    required this.exerciseType,
     required this.subType,
     required this.duration,
     required this.intensity,
@@ -21,11 +21,13 @@ class ExerciseRecord {
     this.createdAt,
   });
 
+  int get type => exerciseType;
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'date': date,
-      'type': type,
+      'type': exerciseType,
       'sub_type': subType,
       'duration': duration,
       'intensity': intensity,
@@ -39,7 +41,7 @@ class ExerciseRecord {
     return ExerciseRecord(
       id: map['id'] as int?,
       date: map['date'] as String,
-      type: map['type'] as int,
+      exerciseType: map['type'] as int,
       subType: map['sub_type'] as String,
       duration: map['duration'] as int,
       intensity: map['intensity'] as int,
@@ -50,7 +52,7 @@ class ExerciseRecord {
   }
 
   String get typeName {
-    switch (type) {
+    switch (exerciseType) {
       case 1: return '有氧运动';
       case 2: return '力量训练';
       case 3: return '柔韧性训练';

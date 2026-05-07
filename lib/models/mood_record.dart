@@ -4,6 +4,8 @@ class MoodRecord {
   int moodLevel;
   String? note;
   String? createdAt;
+  int? stressLevel;
+  String? gratitude;
 
   MoodRecord({
     this.id,
@@ -11,7 +13,11 @@ class MoodRecord {
     required this.moodLevel,
     this.note,
     this.createdAt,
+    this.stressLevel,
+    this.gratitude,
   });
+
+  int get moodScore => moodLevel;
 
   Map<String, dynamic> toMap() {
     return {
@@ -20,6 +26,8 @@ class MoodRecord {
       'mood_score': moodLevel,
       'diary': note,
       'created_at': createdAt,
+      'stress_level': stressLevel,
+      'gratitude': gratitude,
     };
   }
 
@@ -30,6 +38,8 @@ class MoodRecord {
       moodLevel: map['mood_score'] as int,
       note: map['diary'] as String?,
       createdAt: map['created_at'] as String?,
+      stressLevel: map['stress_level'] as int?,
+      gratitude: map['gratitude'] as String?,
     );
   }
 

@@ -155,9 +155,9 @@ class ScoreService {
 
     score += record.moodScore * 3;
 
-    if (record.stressLevel <= 2) {
+    if (record.stressLevel != null && record.stressLevel! <= 2) {
       score += 10;
-    } else if (record.stressLevel <= 3) {
+    } else if (record.stressLevel != null && record.stressLevel! <= 3) {
       score += 5;
     }
 

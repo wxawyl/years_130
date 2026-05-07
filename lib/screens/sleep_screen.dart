@@ -100,7 +100,7 @@ class _SleepScreenState extends State<SleepScreen> {
     return durationMinutes / 60.0;
   }
 
-  String _getQualityText(int quality, AppLocalizations l10n) {
+  String _getQualityText(int? quality, AppLocalizations l10n) {
     switch (quality) {
       case 5:
         return l10n.veryHappy;
@@ -297,8 +297,8 @@ class _SleepScreenState extends State<SleepScreen> {
                             ),
                             child: const Icon(Icons.bed, color: Color(0xFF66BB6A)),
                           ),
-                          title: Text('${record.bedtime} - ${record.wakeTime}'),
-                          subtitle: Text('${record.duration.toStringAsFixed(1)} ${l10n.hours}'),
+                          title: Text('${record.bedtime ?? '--:--'} - ${record.wakeTime ?? '--:--'}'),
+                          subtitle: Text('${record.duration?.toStringAsFixed(1) ?? '--'} ${l10n.hours}'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -343,7 +343,7 @@ class _SleepScreenState extends State<SleepScreen> {
     );
   }
 
-  IconData _getQualityIcon(int quality) {
+  IconData _getQualityIcon(int? quality) {
     switch (quality) {
       case 5:
         return Icons.sentiment_very_satisfied;
