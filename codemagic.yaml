@@ -2,7 +2,7 @@ workflows:
   ios-release:
     name: iOS Release Build
     environment:
-      flutter: 3.13.9
+      flutter: 3.19.6
       xcode: latest
       cocoapods: default
     scripts:
