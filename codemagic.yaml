@@ -2,7 +2,7 @@ workflows:
   ios-release:
     name: iOS Release Build
     environment:
-      flutter: 3.24.0
+      flutter: 3.19.6
       xcode: latest
       cocoapods: default
     scripts:
@@ -11,7 +11,6 @@ workflows:
           flutter pub get
       - name: Build iOS
         script: |
-          cd ios
-          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release clean build -derivedDataPath ../build/ios CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          flutter build ios --release --no-codesign
     artifacts:
-      - build/ios/Build/Products/Release-iphoneos/Runner.app
+      - build/ios/iphoneos/Runner.app
