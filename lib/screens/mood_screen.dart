@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
+import '../services/music_service.dart';
+import '../services/audio_player_service.dart';
 import '../models/mood_record.dart';
 import '../models/knowledge_item.dart';
+import '../models/meditation_music.dart';
+import 'music_selection_screen.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -16,6 +21,8 @@ class MoodScreen extends StatefulWidget {
 class _MoodScreenState extends State<MoodScreen> {
   final _dbService = DatabaseService();
   final _scoreService = ScoreService();
+  final _musicService = MusicService();
+  final _audioPlayer = AudioPlayerService();
   int _moodScore = 3;
   int _stressLevel = 3;
   final _diaryController = TextEditingController();
@@ -25,6 +32,7 @@ class _MoodScreenState extends State<MoodScreen> {
   bool _isMeditating = false;
   int _meditationSeconds = 0;
   Timer? _meditationTimer;
+  MeditationMusic? _currentMusic;
 
   @override
   void initState() {
@@ -79,7 +87,7 @@ class _MoodScreenState extends State<MoodScreen> {
     await _loadTodayRecord();
   }
 
-  void _startMeditation() {
+  void _startMeditation() async {
     setState(() {
       _isMeditating = true;
       _meditationSeconds = 0;
@@ -90,12 +98,26 @@ class _MoodScreenState extends State<MoodScreen> {
         _meditationSeconds++;
       });
     });
+    
+    try {
+      _currentMusic = _musicService.getRandomMusic();
+      await _audioPlayer.play(_currentMusic!);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('开始播放: ${_currentMusic!.title}')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('音乐播放失败，请检查网络')),
+      );
+    }
   }
 
   void _stopMeditation() {
     _meditationTimer?.cancel();
+    _audioPlayer.stop();
     setState(() {
       _isMeditating = false;
+      _currentMusic = null;
     });
     
     ScaffoldMessenger.of(context).showSnackBar(
@@ -107,6 +129,145 @@ class _MoodScreenState extends State<MoodScreen> {
     int minutes = seconds ~/ 60;
     int secs = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _editRecord() {
+    if (_todayRecord == null) return;
+    
+    _moodScore = _todayRecord!.moodScore;
+    _stressLevel = _todayRecord!.stressLevel;
+    _diaryController.text = _todayRecord!.diary ?? '';
+    _gratitudeController.text = _todayRecord!.gratitude ?? '';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('编辑心情记录'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Text('今日心情'),
+                  const Spacer(),
+                  Row(
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        iconSize: 32,
+                        icon: Icon(
+                          index < _moodScore ? Icons.sentiment_very_satisfied : Icons.sentiment_neutral,
+                          color: index < _moodScore ? Colors.yellow : Colors.grey,
+                        ),
+                        onPressed: () => setState(() => _moodScore = index + 1),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Text('压力水平'),
+                  const Spacer(),
+                  Row(
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          Icons.speed,
+                          color: index < _stressLevel ? Colors.orange : Colors.grey,
+                        ),
+                        onPressed: () => setState(() => _stressLevel = index + 1),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _diaryController,
+                decoration: const InputDecoration(labelText: '心情日记'),
+                maxLines: 4,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _gratitudeController,
+                decoration: const InputDecoration(labelText: '感恩事项'),
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _loadTodayRecord();
+              Navigator.pop(context);
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              MoodRecord updatedRecord = MoodRecord(
+                id: _todayRecord!.id,
+                date: _todayRecord!.date,
+                moodScore: _moodScore,
+                stressLevel: _stressLevel,
+                diary: _diaryController.text,
+                gratitude: _gratitudeController.text,
+              );
+              
+              await _dbService.updateMoodRecord(updatedRecord);
+              await _scoreService.calculateDailyScore(_todayRecord!.date);
+              await _loadTodayRecord();
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('记录更新成功！')),
+              );
+              
+              Navigator.pop(context);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteRecord() {
+    if (_todayRecord == null) return;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除今天的心情记录吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _dbService.deleteMoodRecord(_todayRecord!.id!);
+              await _scoreService.calculateDailyScore(_todayRecord!.date);
+              _todayRecord = null;
+              _moodScore = 3;
+              _stressLevel = 3;
+              _diaryController.clear();
+              _gratitudeController.clear();
+              setState(() {});
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('记录已删除')),
+              );
+              
+              Navigator.pop(context);
+            },
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -145,6 +306,28 @@ class _MoodScreenState extends State<MoodScreen> {
                     if (_todayRecord != null) ...[
                       const SizedBox(height: 8),
                       Text('压力水平: ${_todayRecord!.stressText}'),
+                      if (_todayRecord!.diary?.isNotEmpty ?? false) ...[
+                        const SizedBox(height: 8),
+                        Text('日记: ${_todayRecord!.diary}'),
+                      ],
+                      if (_todayRecord!.gratitude?.isNotEmpty ?? false) ...[
+                        const SizedBox(height: 8),
+                        Text('感恩: ${_todayRecord!.gratitude}'),
+                      ],
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () => _editRecord(),
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                          ),
+                          IconButton(
+                            onPressed: () => _deleteRecord(),
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                          ),
+                        ],
+                      ),
                     ],
                   ],
                 ),
@@ -282,6 +465,30 @@ class _MoodScreenState extends State<MoodScreen> {
                             ),
                             child: const Text('开始冥想', style: TextStyle(fontSize: 16)),
                           ),
+                    const SizedBox(height: 16),
+                    OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MusicSelectionScreen(),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        side: const BorderSide(color: Colors.orange),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.music_note, color: Colors.orange),
+                          SizedBox(width: 8),
+                          Text('选择冥想音乐', style: TextStyle(color: Colors.orange)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),

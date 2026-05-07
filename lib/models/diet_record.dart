@@ -9,6 +9,8 @@ class DietRecord {
   double fat;
   double servings;
   String? createdAt;
+  String? foodImagePath;
+  double? recognitionConfidence;
 
   DietRecord({
     this.id,
@@ -21,6 +23,8 @@ class DietRecord {
     required this.fat,
     required this.servings,
     this.createdAt,
+    this.foodImagePath,
+    this.recognitionConfidence,
   });
 
   Map<String, dynamic> toMap() {
@@ -35,6 +39,8 @@ class DietRecord {
       'fat': fat,
       'servings': servings,
       'created_at': createdAt,
+      'food_image': foodImagePath,
+      'recognition_confidence': recognitionConfidence,
     };
   }
 
@@ -50,6 +56,8 @@ class DietRecord {
       fat: map['fat'] as double,
       servings: map['servings'] as double,
       createdAt: map['created_at'] as String?,
+      foodImagePath: map['food_image'] as String?,
+      recognitionConfidence: map['recognition_confidence'] as double?,
     );
   }
 

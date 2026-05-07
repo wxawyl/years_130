@@ -23,9 +23,23 @@ class DatabaseService {
     final path = join(documentsDirectory.path, 'health_life.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDatabase,
+      onUpgrade: _onUpgradeDatabase,
     );
+  }
+
+  Future<void> _onUpgradeDatabase(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN food_image TEXT
+      ''');
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN recognition_confidence REAL
+      ''');
+    }
   }
 
   Future<void> _createDatabase(Database db, int version) async {
@@ -241,6 +255,25 @@ class DatabaseService {
     return List.generate(maps.length, (i) => SleepRecord.fromMap(maps[i]));
   }
 
+  Future<int> updateSleepRecord(SleepRecord record) async {
+    final db = await database;
+    return await db.update(
+      'sleep_records',
+      record.toMap(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
+  }
+
+  Future<int> deleteSleepRecord(int id) async {
+    final db = await database;
+    return await db.delete(
+      'sleep_records',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<int> insertDietRecord(DietRecord record) async {
     final db = await database;
     return await db.insert('diet_records', record.toMap());
@@ -254,6 +287,25 @@ class DatabaseService {
       whereArgs: [date],
     );
     return List.generate(maps.length, (i) => DietRecord.fromMap(maps[i]));
+  }
+
+  Future<int> updateDietRecord(DietRecord record) async {
+    final db = await database;
+    return await db.update(
+      'diet_records',
+      record.toMap(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
+  }
+
+  Future<int> deleteDietRecord(int id) async {
+    final db = await database;
+    return await db.delete(
+      'diet_records',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<int> insertExerciseRecord(ExerciseRecord record) async {
@@ -271,6 +323,25 @@ class DatabaseService {
     return List.generate(maps.length, (i) => ExerciseRecord.fromMap(maps[i]));
   }
 
+  Future<int> updateExerciseRecord(ExerciseRecord record) async {
+    final db = await database;
+    return await db.update(
+      'exercise_records',
+      record.toMap(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
+  }
+
+  Future<int> deleteExerciseRecord(int id) async {
+    final db = await database;
+    return await db.delete(
+      'exercise_records',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<int> insertMoodRecord(MoodRecord record) async {
     final db = await database;
     return await db.insert('mood_records', record.toMap());
@@ -286,6 +357,25 @@ class DatabaseService {
     );
     if (maps.isEmpty) return null;
     return MoodRecord.fromMap(maps.first);
+  }
+
+  Future<int> updateMoodRecord(MoodRecord record) async {
+    final db = await database;
+    return await db.update(
+      'mood_records',
+      record.toMap(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
+  }
+
+  Future<int> deleteMoodRecord(int id) async {
+    final db = await database;
+    return await db.delete(
+      'mood_records',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<int> insertDailyScore(DailyScore score) async {

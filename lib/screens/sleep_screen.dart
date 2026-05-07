@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../models/sleep_record.dart';
@@ -93,6 +94,135 @@ class _SleepScreenState extends State<SleepScreen> {
     } catch (_) {
       return null;
     }
+  }
+
+  void _editRecord(SleepRecord record) {
+    _bedTimeController.text = record.bedTime ?? '';
+    _wakeTimeController.text = record.wakeTime ?? '';
+    _notesController.text = record.notes ?? '';
+    _quality = record.quality ?? 3;
+    _deepSleepRatio = record.deepSleepRatio ?? 0.25;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('编辑睡眠记录'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: _bedTimeController,
+                decoration: const InputDecoration(labelText: '入睡时间'),
+                keyboardType: TextInputType.datetime,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _wakeTimeController,
+                decoration: const InputDecoration(labelText: '醒来时间'),
+                keyboardType: TextInputType.datetime,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Text('睡眠质量'),
+                  const Spacer(),
+                  Row(
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          Icons.star,
+                          color: index < _quality ? Colors.yellow : Colors.grey,
+                        ),
+                        onPressed: () => setState(() => _quality = index + 1),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _notesController,
+                decoration: const InputDecoration(labelText: '备注'),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _bedTimeController.clear();
+              _wakeTimeController.clear();
+              _notesController.clear();
+              _quality = 3;
+              _deepSleepRatio = 0.25;
+              Navigator.pop(context);
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              SleepRecord updatedRecord = SleepRecord(
+                id: record.id,
+                date: record.date,
+                bedTime: _bedTimeController.text,
+                wakeTime: _wakeTimeController.text,
+                duration: _calculateDuration(),
+                quality: _quality,
+                deepSleepRatio: _deepSleepRatio,
+                notes: _notesController.text,
+              );
+              
+              await _dbService.updateSleepRecord(updatedRecord);
+              await _scoreService.calculateDailyScore(record.date);
+              await _loadTodayRecords();
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('记录更新成功！')),
+              );
+              
+              _bedTimeController.clear();
+              _wakeTimeController.clear();
+              _notesController.clear();
+              _quality = 3;
+              _deepSleepRatio = 0.25;
+              Navigator.pop(context);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteRecord(SleepRecord record) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除这条睡眠记录吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _dbService.deleteSleepRecord(record.id!);
+              await _scoreService.calculateDailyScore(record.date);
+              await _loadTodayRecords();
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('记录已删除')),
+              );
+              
+              Navigator.pop(context);
+            },
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -231,13 +361,33 @@ class _SleepScreenState extends State<SleepScreen> {
                     itemCount: _todayRecords.length,
                     itemBuilder: (context, index) {
                       var record = _todayRecords[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text('入睡: ${record.bedTime} - 醒来: ${record.wakeTime}'),
-                          subtitle: Text(
-                            '时长: ${record.duration?.toStringAsFixed(1)}小时 | 质量: ${'⭐' * (record.quality ?? 0)}',
+                      return Slidable(
+                        endActionPane: ActionPane(
+                          motion: const DrawerMotion(),
+                          extentRatio: 0.25,
+                          children: [
+                            SlidableAction(
+                              label: '编辑',
+                              backgroundColor: Colors.blue,
+                              icon: Icons.edit,
+                              onPressed: (context) => _editRecord(record),
+                            ),
+                            SlidableAction(
+                              label: '删除',
+                              backgroundColor: Colors.red,
+                              icon: Icons.delete,
+                              onPressed: (context) => _deleteRecord(record),
+                            ),
+                          ],
+                        ),
+                        child: Card(
+                          child: ListTile(
+                            title: Text('入睡: ${record.bedTime} - 醒来: ${record.wakeTime}'),
+                            subtitle: Text(
+                              '时长: ${record.duration?.toStringAsFixed(1)}小时 | 质量: ${'⭐' * (record.quality ?? 0)}',
+                            ),
+                            trailing: Text(record.notes ?? ''),
                           ),
-                          trailing: Text(record.notes ?? ''),
                         ),
                       );
                     },

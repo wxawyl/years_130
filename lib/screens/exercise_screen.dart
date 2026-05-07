@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../models/exercise_record.dart';
@@ -109,6 +110,143 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
     _intensity = exercise['intensity'];
     _caloriesController.text = exercise['calories'].toString();
     setState(() {});
+  }
+
+  void _editRecord(ExerciseRecord record) {
+    _type = record.type;
+    _subTypeController.text = record.subType ?? '';
+    _durationController.text = record.duration.toString();
+    _intensity = record.intensity;
+    _caloriesController.text = record.caloriesBurned.toString();
+    _stepsController.text = record.steps?.toString() ?? '';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('编辑运动记录'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              DropdownButtonFormField<int>(
+                value: _type,
+                items: List.generate(4, (index) => DropdownMenuItem(
+                  value: index + 1,
+                  child: Text(_exerciseTypes[index]),
+                )),
+                onChanged: (value) => setState(() => _type = value!),
+                decoration: const InputDecoration(labelText: '运动类型'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _subTypeController,
+                decoration: const InputDecoration(labelText: '运动项目'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _durationController,
+                decoration: const InputDecoration(labelText: '运动时长（分钟）'),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Text('运动强度'),
+                  const Spacer(),
+                  Row(
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          Icons.local_fire_department,
+                          color: index < _intensity ? Colors.orange : Colors.grey,
+                        ),
+                        onPressed: () => setState(() => _intensity = index + 1),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _caloriesController,
+                decoration: const InputDecoration(labelText: '消耗卡路里'),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _stepsController,
+                decoration: const InputDecoration(labelText: '步数（可选）'),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _clearForm();
+              Navigator.pop(context);
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              ExerciseRecord updatedRecord = ExerciseRecord(
+                id: record.id,
+                date: record.date,
+                type: _type,
+                subType: _subTypeController.text,
+                duration: int.tryParse(_durationController.text) ?? 0,
+                intensity: _intensity,
+                caloriesBurned: double.tryParse(_caloriesController.text) ?? 0,
+                steps: int.tryParse(_stepsController.text),
+              );
+              
+              await _dbService.updateExerciseRecord(updatedRecord);
+              await _scoreService.calculateDailyScore(record.date);
+              await _loadTodayRecords();
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('记录更新成功！')),
+              );
+              
+              _clearForm();
+              Navigator.pop(context);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteRecord(ExerciseRecord record) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('确定要删除 "${record.subType}" 这条运动记录吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _dbService.deleteExerciseRecord(record.id!);
+              await _scoreService.calculateDailyScore(record.date);
+              await _loadTodayRecords();
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('记录已删除')),
+              );
+              
+              Navigator.pop(context);
+            },
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -323,13 +461,33 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                     itemCount: _todayRecords.length,
                     itemBuilder: (context, index) {
                       var record = _todayRecords[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text('${record.typeName}: ${record.subType}'),
-                          subtitle: Text(
-                            '${record.duration}分钟 | ${record.intensityName} | ${record.caloriesBurned}卡路里',
+                      return Slidable(
+                        endActionPane: ActionPane(
+                          motion: const DrawerMotion(),
+                          extentRatio: 0.25,
+                          children: [
+                            SlidableAction(
+                              label: '编辑',
+                              backgroundColor: Colors.blue,
+                              icon: Icons.edit,
+                              onPressed: (context) => _editRecord(record),
+                            ),
+                            SlidableAction(
+                              label: '删除',
+                              backgroundColor: Colors.red,
+                              icon: Icons.delete,
+                              onPressed: (context) => _deleteRecord(record),
+                            ),
+                          ],
+                        ),
+                        child: Card(
+                          child: ListTile(
+                            title: Text('${record.typeName}: ${record.subType}'),
+                            subtitle: Text(
+                              '${record.duration}分钟 | ${record.intensityName} | ${record.caloriesBurned}卡路里',
+                            ),
+                            trailing: record.steps != null ? Text('${record.steps}步') : null,
                           ),
-                          trailing: record.steps != null ? Text('${record.steps}步') : null,
                         ),
                       );
                     },

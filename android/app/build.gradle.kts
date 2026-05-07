@@ -12,7 +12,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        isCoreLibraryDesugaringEnabled = true   // 关键修复：使用 is 前缀
+        isCoreLibraryDesugaringEnabled = true
+        encoding = "UTF-8"
     }
 
     kotlinOptions {
