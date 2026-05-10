@@ -28,20 +28,26 @@ class AudioPlayerService {
     
     try {
       print('=== 音频播放调试 ===');
+      print('平台: iOS/Android');
       print('音乐标题: ${music.title}');
       print('音频URL: ${music.url}');
       
       await _audioPlayer.setVolume(_volume);
       
       Source source;
-      if (music.url.startsWith('http')) {
+      if (music.url.startsWith('http://') || music.url.startsWith('https://')) {
         source = UrlSource(music.url);
-        print('使用网络音频源');
+        print('使用网络音频源 (UrlSource)');
+      } else if (music.url.startsWith('asset://')) {
+        final assetPath = music.url.replaceFirst('asset://', '');
+        source = AssetSource(assetPath);
+        print('使用资产音频源 (AssetSource): $assetPath');
       } else {
         source = DeviceFileSource(music.url);
-        print('使用本地音频源');
+        print('使用本地文件源 (DeviceFileSource)');
       }
       
+      print('准备播放...');
       await _audioPlayer.play(source);
       print('播放命令已发送');
       
@@ -54,7 +60,6 @@ class AudioPlayerService {
       
       _audioPlayer.onPositionChanged.listen((position) {
         _position = position;
-        print('播放进度: $position');
       });
       
       _audioPlayer.onPlayerStateChanged.listen((state) {
@@ -66,12 +71,21 @@ class AudioPlayerService {
           _isPlaying = true;
         } else if (state == PlayerState.paused) {
           _isPlaying = false;
+        } else if (state == PlayerState.stopped) {
+          _isPlaying = false;
+          _position = Duration.zero;
         }
+      });
+      
+      _audioPlayer.onPlayerError.listen((error) {
+        print('音频错误: $error');
+        _isPlaying = false;
       });
       
     } catch (e) {
       _isPlaying = false;
       print('播放异常: $e');
+      print('异常类型: ${e.runtimeType}');
       rethrow;
     }
   }
@@ -134,6 +148,11 @@ class AudioPlayerService {
   }
 
   void dispose() {
-    _audioPlayer.dispose();
+    try {
+      _audioPlayer.dispose();
+      print('音频播放器已释放');
+    } catch (e) {
+      print('释放播放器失败: $e');
+    }
   }
 }
