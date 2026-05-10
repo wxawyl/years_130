@@ -25,6 +25,7 @@ class BaiduFoodRecognitionService {
     }
 
     try {
+      print('BaiduFood: Getting access token from: $_tokenUrl');
       final response = await http.get(
         Uri.parse(
           '$_tokenUrl?grant_type=client_credentials'
@@ -32,6 +33,8 @@ class BaiduFoodRecognitionService {
           '&client_secret=$_secretKey',
         ),
       );
+      print('BaiduFood: Response status: ${response.statusCode}');
+      print('BaiduFood: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

@@ -5,6 +5,8 @@ import '../services/score_service.dart';
 import '../models/mood_record.dart';
 import '../models/knowledge_item.dart';
 import '../l10n/app_localizations.dart';
+import 'music_selection_screen.dart';
+import 'analysis_screen.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -94,28 +96,70 @@ class _MoodScreenState extends State<MoodScreen> {
     }
   }
 
-  Future<void> _saveRecord() async {
+  Future<void> _saveRecord({int? editId}) async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     MoodRecord record = MoodRecord(
+      id: editId,
       date: today,
       moodLevel: _moodLevel,
       note: _noteController.text,
     );
 
-    await _dbService.insertMoodRecord(record);
+    if (editId != null) {
+      await _dbService.updateMoodRecord(record);
+    } else {
+      await _dbService.insertMoodRecord(record);
+    }
     await _scoreService.calculateDailyScore(today);
     await _loadTodayRecords();
 
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.moodRecordSaved)),
+      SnackBar(content: Text(editId != null ? l10n.recordUpdated : l10n.moodRecordSaved)),
     );
 
     _noteController.clear();
     setState(() {
       _moodLevel = 3;
     });
+  }
+
+  void _editRecord(MoodRecord record) {
+    setState(() {
+      _moodLevel = record.moodLevel;
+      _noteController.text = record.note ?? '';
+    });
+  }
+
+  void _deleteRecord(MoodRecord record) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.confirmDelete),
+        content: Text(l10n.deleteRecordConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _dbService.deleteMoodRecord(record.id!);
+              await _scoreService.calculateDailyScore(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+              await _loadTodayRecords();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.recordDeleted)),
+              );
+            },
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -232,6 +276,40 @@ class _MoodScreenState extends State<MoodScreen> {
               child: Text(l10n.recordMood, style: const TextStyle(fontSize: 16)),
             ),
             const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MusicSelectionScreen()),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7E57C2),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.music_note),
+                  const SizedBox(width: 8),
+                  Text(l10n.meditationMusic, style: const TextStyle(fontSize: 16)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AnalysisScreen(analysisType: AnalysisType.mood)),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7E57C2),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.bar_chart),
+              label: Text(l10n.moodAnalysis, style: const TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(height: 20),
             Text(
               l10n.todayRecords,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -263,6 +341,19 @@ class _MoodScreenState extends State<MoodScreen> {
                           subtitle: record.note != null && record.note!.isNotEmpty
                               ? Text(record.note!)
                               : null,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _editRecord(record),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteRecord(record),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

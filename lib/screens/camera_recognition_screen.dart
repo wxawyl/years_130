@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/baidu_food_recognition_service.dart';
@@ -89,11 +90,29 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
         child: _imagePath != null
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.file(
-                  File(_imagePath!),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
+                child: kIsWeb
+                    ? Image.network(
+                        _imagePath!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error, size: 48, color: Colors.grey[400]),
+                                const SizedBox(height: 8),
+                                Text('图片加载失败', style: TextStyle(color: Colors.grey[600])),
+                              ],
+                            ),
+                          );
+                        },
+                      )
+                    : Image.file(
+                        File(_imagePath!),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      ),
               )
             : Center(
                 child: Column(

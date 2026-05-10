@@ -222,10 +222,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get swimming => 'Natación';
 
   @override
-  String get yoga => 'Yoga';
+  String get pushups => 'Push-ups';
 
   @override
-  String get gym => 'Gimnasio';
+  String get legRaises => 'Leg Raises';
 
   @override
   String get moodManagement => 'Gestión del estado de ánimo';
@@ -305,4 +305,287 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settings => 'Configuración';
+
+  @override
+  String get developer => 'Developer';
+
+  @override
+  String get developerCenter => 'Developer Center';
+
+  @override
+  String get buildTogether => 'Build Together for Health';
+
+  @override
+  String get developerDescription =>
+      'Join our community of developers to build the future of health technology';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get pluginMarket => 'Plugin Market';
+
+  @override
+  String get pluginMarketDescription => 'Extend app functionality with plugins';
+
+  @override
+  String get apiDocs => 'API Docs';
+
+  @override
+  String get apiDocsDescription => 'Access our RESTful API documentation';
+
+  @override
+  String get github => 'GitHub';
+
+  @override
+  String get githubDescription => 'Contribute to our open source project';
+
+  @override
+  String get community => 'Community';
+
+  @override
+  String get communityDescription => 'Connect with other developers';
+
+  @override
+  String get aiMarket => 'AI Model Market';
+
+  @override
+  String get aiMarketDescription => 'Share and discover AI models';
+
+  @override
+  String get contributors => 'Contributors';
+
+  @override
+  String get contributorsDescription => 'Meet our amazing contributors';
+
+  @override
+  String get topContributors => 'Top Contributors';
+
+  @override
+  String get plugins => 'Plugins';
+
+  @override
+  String get stars => 'Stars';
+
+  @override
+  String get commits => 'Commits';
+
+  @override
+  String get welcomeDeveloper => 'Welcome Developer!';
+
+  @override
+  String get developerWelcomeMessage =>
+      'Thank you for joining our developer community! Together, we can build amazing health solutions that benefit people around the world.';
+
+  @override
+  String get comingSoon => 'Coming Soon';
+
+  @override
+  String get feedback => 'Feedback';
+
+  @override
+  String get yourVoiceMatters => 'Your Voice Matters';
+
+  @override
+  String get feedbackDescription =>
+      'Help us improve by sharing your thoughts and ideas';
+
+  @override
+  String get feedbackType => 'Feedback Type';
+
+  @override
+  String get suggestion => 'Suggestion';
+
+  @override
+  String get improvement => 'Help us improve';
+
+  @override
+  String get bugReport => 'Bug Report';
+
+  @override
+  String get issueFound => 'Report technical issues';
+
+  @override
+  String get featureRequest => 'Feature Request';
+
+  @override
+  String get newFeature => 'Request new features';
+
+  @override
+  String get praise => 'Praise';
+
+  @override
+  String get positiveFeedback => 'Share positive experiences';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get otherFeedback => 'Other feedback';
+
+  @override
+  String get feedbackContent => 'Feedback Content';
+
+  @override
+  String get feedbackHint => 'Please describe your feedback in detail...';
+
+  @override
+  String get contactInfo => 'Contact Information';
+
+  @override
+  String get contactHint => 'Email address (optional)';
+
+  @override
+  String get contactOptional =>
+      'Optional - we may contact you for further details';
+
+  @override
+  String get submitFeedback => 'Submit Feedback';
+
+  @override
+  String get pleaseEnterContent => 'Please enter feedback content';
+
+  @override
+  String get minLengthWarning =>
+      'Please provide more details (minimum 10 characters)';
+
+  @override
+  String get overallAnalysis => 'Overall Analysis';
+
+  @override
+  String get sleepAnalysis => 'Sleep Analysis';
+
+  @override
+  String get dietAnalysis => 'Diet Analysis';
+
+  @override
+  String get exerciseAnalysis => 'Exercise Analysis';
+
+  @override
+  String get moodAnalysis => 'Mood Analysis';
+
+  @override
+  String get shareYourInsight => 'Share Your Insight';
+
+  @override
+  String get whatDoYouThink => 'What do you think about health and longevity?';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get postShared => 'Your post has been shared!';
+
+  @override
+  String get writeComment => 'Write a comment...';
+
+  @override
+  String get hot => 'Hot';
+
+  @override
+  String get newest => 'Newest';
+
+  @override
+  String get following => 'Following';
+
+  @override
+  String get minutesAgo => 'minutes ago';
+
+  @override
+  String get hoursAgo => 'hours ago';
+
+  @override
+  String get daysAgo => 'days ago';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get noData => 'No data available';
+
+  @override
+  String get avgSleepDuration => 'Average Sleep Duration';
+
+  @override
+  String get avgQuality => 'Average Quality';
+
+  @override
+  String get consistency => 'Consistency';
+
+  @override
+  String get totalMinutes => 'Total Minutes';
+
+  @override
+  String get totalCalories => 'Total Calories';
+
+  @override
+  String get avgIntensity => 'Average Intensity';
+
+  @override
+  String get frequency => 'Frequency';
+
+  @override
+  String get days => 'days';
+
+  @override
+  String get avgCalories => 'Average Calories';
+
+  @override
+  String get avgProtein => 'Average Protein';
+
+  @override
+  String get avgCarbs => 'Average Carbs';
+
+  @override
+  String get avgFat => 'Average Fat';
+
+  @override
+  String get avgMood => 'Average Mood';
+
+  @override
+  String get stability => 'Stability';
+
+  @override
+  String get positiveDays => 'Positive Days';
+
+  @override
+  String get overallHealthScore => 'Overall Health Score';
+
+  @override
+  String get distribution => 'Distribution';
+
+  @override
+  String get personalizedAdvice => 'Personalized Advice';
+
+  @override
+  String get analysis => 'Analysis';
+
+  @override
+  String get musicUploaded => 'Music uploaded successfully!';
+
+  @override
+  String get uploadFailed => 'Upload failed, please try again';
+
+  @override
+  String get editMusic => 'Edit Music';
+
+  @override
+  String get title => 'Title';
+
+  @override
+  String get artist => 'Artist';
+
+  @override
+  String get deleteMusicConfirm =>
+      'Are you sure you want to delete this music?';
+
+  @override
+  String get musicDeleted => 'Music deleted';
+
+  @override
+  String get deleteRecordConfirm =>
+      'Are you sure you want to delete this record?';
+
+  @override
+  String get timeRange => 'Time Range';
 }

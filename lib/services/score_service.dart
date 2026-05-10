@@ -111,58 +111,69 @@ class ScoreService {
     double score = 0;
     int totalDuration = 0;
     int totalIntensity = 0;
+    bool hasAerobic = false;
+    bool hasStrength = false;
 
     for (var record in records) {
       totalDuration += record.duration;
       totalIntensity += record.intensity;
+      
+      if ([1, 2, 3, 4].contains(record.exerciseType)) {
+        hasAerobic = true;
+      }
+      if (record.exerciseType == 6) {
+        hasStrength = true;
+      }
     }
 
-    if (totalDuration >= 30) {
+    if (totalDuration >= 60) {
       score += 10;
+    } else if (totalDuration >= 30) {
+      score += 7;
     } else if (totalDuration >= 15) {
-      score += 5;
-    }
-
-    double avgIntensity = totalIntensity / records.length;
-    if (avgIntensity >= 3) {
-      score += 8;
-    } else if (avgIntensity >= 2) {
       score += 4;
     }
 
-    for (var record in records) {
-      if (record.type == 1) {
-        score += 4;
-        break;
-      }
+    double avgIntensity = totalIntensity / records.length;
+    if (avgIntensity >= 4) {
+      score += 8;
+    } else if (avgIntensity >= 3) {
+      score += 5;
+    } else if (avgIntensity >= 2) {
+      score += 3;
     }
 
-    for (var record in records) {
-      if (record.type == 2) {
-        score += 3;
-        break;
-      }
+    if (hasAerobic) {
+      score += 4;
+    }
+
+    if (hasStrength) {
+      score += 3;
     }
 
     return score.clamp(0, 25);
   }
 
   Future<double> calculateMoodScore(String date) async {
-    final record = await _dbService.getMoodRecord(date);
-    if (record == null) return 0;
+    final records = await _dbService.getMoodRecords(date);
+    if (records.isEmpty) return 0;
 
     double score = 0;
+    int totalMood = 0;
 
-    score += record.moodScore * 3;
-
-    if (record.stressLevel != null && record.stressLevel! <= 2) {
-      score += 10;
-    } else if (record.stressLevel != null && record.stressLevel! <= 3) {
-      score += 5;
+    for (var record in records) {
+      totalMood += record.moodLevel;
     }
 
-    if (record.gratitude != null && record.gratitude!.isNotEmpty) {
-      score += 5;
+    double avgMood = totalMood / records.length;
+    
+    score += avgMood * 4;
+
+    for (var record in records) {
+      if (record.note != null && record.note!.isNotEmpty) {
+        score += 5;
+        break;
+      }
     }
 
     return score.clamp(0, 25);

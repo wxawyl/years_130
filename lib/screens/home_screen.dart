@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../services/locale_service.dart';
+import '../services/share_service.dart';
 import '../models/daily_score.dart';
 import '../widgets/score_card.dart';
 import '../widgets/quick_action_button.dart';
@@ -12,6 +14,10 @@ import 'sleep_screen.dart';
 import 'diet_screen.dart';
 import 'exercise_screen.dart';
 import 'mood_screen.dart';
+import 'analysis_screen.dart';
+import 'feedback_screen.dart';
+import 'share_community_screen.dart';
+import 'developer_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -130,9 +136,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
-                            Text(
-                              l10n.todayHealthScore,
-                              style: const TextStyle(fontSize: 16, color: Color(0xFF757575)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  l10n.todayHealthScore,
+                                  style: const TextStyle(fontSize: 16, color: Color(0xFF757575)),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.share),
+                                  onPressed: () {
+                                    String content = ShareService.generateHealthShareContent(score);
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) => ShareBottomSheet(content: content),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 16),
                             Container(
@@ -215,63 +236,99 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    SuggestionCard(suggestions: suggestions),
-                  ],
-                );
-              },
-            ),
+            SuggestionCard(suggestions: suggestions),
             const SizedBox(height: 20),
-            Text(
-              l10n.quickRecord,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ElevatedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AnalysisScreen(analysisType: AnalysisType.overall)),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7E57C2),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.bar_chart),
+                  const SizedBox(width: 8),
+                  Text(l10n.overallAnalysis, style: const TextStyle(fontSize: 16)),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 4,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+            ElevatedButton(
+              onPressed: () async {
+                await DatabaseService().generateDemoData();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('演示数据已生成，请刷新查看评分')),
+                  );
+                  _refreshScore();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+                minimumSize: const Size(double.infinity, 40),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('生成演示数据', style: TextStyle(fontSize: 14)),
+            ),
+            const SizedBox(height: 12),
+            Row(
               children: [
-                QuickActionButton(
-                  title: l10n.sleep,
-                  icon: Icons.bed,
-                  color: const Color(0xFF66BB6A),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SleepScreen()),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ShareCommunityScreen()),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF66BB6A),
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.people),
+                        const SizedBox(width: 6),
+                        Text(l10n.community, style: const TextStyle(fontSize: 14)),
+                      ],
+                    ),
                   ),
                 ),
-                QuickActionButton(
-                  title: l10n.diet,
-                  icon: Icons.food_bank,
-                  color: const Color(0xFFFF7043),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const DietScreen()),
-                  ),
-                ),
-                QuickActionButton(
-                  title: l10n.exercise,
-                  icon: Icons.directions_run,
-                  color: const Color(0xFF42A5F5),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ExerciseScreen()),
-                  ),
-                ),
-                QuickActionButton(
-                  title: l10n.mood,
-                  icon: Icons.sentiment_satisfied,
-                  color: const Color(0xFFFFCA28),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MoodScreen()),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const DeveloperScreen()),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF42A5F5),
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.code),
+                        const SizedBox(width: 6),
+                        Text(l10n.developer, style: const TextStyle(fontSize: 14)),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ],
+        );
+      },
+    ),
+    const SizedBox(height: 20),
+  ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -299,6 +356,38 @@ class _HomeScreenState extends State<HomeScreen> {
               break;
           }
         },
+      ),
+      floatingActionButton: _buildFeedbackFloatingButton(context, l10n),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _buildFeedbackFloatingButton(BuildContext context, AppLocalizations l10n) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF7E57C2), Color(0xFF5E35B1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7E57C2).withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FeedbackScreen()),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: const Icon(Icons.lightbulb_outline, size: 28),
+        tooltip: l10n.feedback,
       ),
     );
   }

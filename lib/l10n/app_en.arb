@@ -292,13 +292,13 @@
   "@swimming": {
     "description": "Swimming exercise"
   },
-  "yoga": "Yoga",
-  "@yoga": {
-    "description": "Yoga exercise"
+  "pushups": "Push-ups",
+  "@pushups": {
+    "description": "Push-ups exercise"
   },
-  "gym": "Gym",
-  "@gym": {
-    "description": "Gym exercise"
+  "legRaises": "Leg Raises",
+  "@legRaises": {
+    "description": "Leg raises exercise"
   },
   "moodManagement": "Mood Management",
   "@moodManagement": {
@@ -403,5 +403,373 @@
   "settings": "Settings",
   "@settings": {
     "description": "Settings title"
+  },
+  "developer": "Developer",
+  "@developer": {
+    "description": "Developer center label"
+  },
+  "developerCenter": "Developer Center",
+  "@developerCenter": {
+    "description": "Developer center screen title"
+  },
+  "buildTogether": "Build Together for Health",
+  "@buildTogether": {
+    "description": "Developer center hero title"
+  },
+  "developerDescription": "Join our community of developers to build the future of health technology",
+  "@developerDescription": {
+    "description": "Developer center hero description"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button"
+  },
+  "pluginMarket": "Plugin Market",
+  "@pluginMarket": {
+    "description": "Plugin market section"
+  },
+  "pluginMarketDescription": "Extend app functionality with plugins",
+  "@pluginMarketDescription": {
+    "description": "Plugin market description"
+  },
+  "apiDocs": "API Docs",
+  "@apiDocs": {
+    "description": "API documentation section"
+  },
+  "apiDocsDescription": "Access our RESTful API documentation",
+  "@apiDocsDescription": {
+    "description": "API docs description"
+  },
+  "github": "GitHub",
+  "@github": {
+    "description": "GitHub section"
+  },
+  "githubDescription": "Contribute to our open source project",
+  "@githubDescription": {
+    "description": "GitHub description"
+  },
+  "community": "Community",
+  "@community": {
+    "description": "Community section"
+  },
+  "communityDescription": "Connect with other developers",
+  "@communityDescription": {
+    "description": "Community description"
+  },
+  "aiMarket": "AI Model Market",
+  "@aiMarket": {
+    "description": "AI model market section"
+  },
+  "aiMarketDescription": "Share and discover AI models",
+  "@aiMarketDescription": {
+    "description": "AI market description"
+  },
+  "contributors": "Contributors",
+  "@contributors": {
+    "description": "Contributors section"
+  },
+  "contributorsDescription": "Meet our amazing contributors",
+  "@contributorsDescription": {
+    "description": "Contributors description"
+  },
+  "topContributors": "Top Contributors",
+  "@topContributors": {
+    "description": "Top contributors section title"
+  },
+  "plugins": "Plugins",
+  "@plugins": {
+    "description": "Plugins count label"
+  },
+  "stars": "Stars",
+  "@stars": {
+    "description": "Stars count label"
+  },
+  "commits": "Commits",
+  "@commits": {
+    "description": "Commits count label"
+  },
+  "welcomeDeveloper": "Welcome Developer!",
+  "@welcomeDeveloper": {
+    "description": "Welcome dialog title"
+  },
+  "developerWelcomeMessage": "Thank you for joining our developer community! Together, we can build amazing health solutions that benefit people around the world.",
+  "@developerWelcomeMessage": {
+    "description": "Welcome message for developers"
+  },
+  "comingSoon": "Coming Soon",
+  "@comingSoon": {
+    "description": "Coming soon placeholder"
+  },
+  "feedback": "Feedback",
+  "@feedback": {
+    "description": "Feedback label"
+  },
+  "yourVoiceMatters": "Your Voice Matters",
+  "@yourVoiceMatters": {
+    "description": "Feedback hero title"
+  },
+  "feedbackDescription": "Help us improve by sharing your thoughts and ideas",
+  "@feedbackDescription": {
+    "description": "Feedback hero description"
+  },
+  "feedbackType": "Feedback Type",
+  "@feedbackType": {
+    "description": "Feedback type label"
+  },
+  "suggestion": "Suggestion",
+  "@suggestion": {
+    "description": "Suggestion feedback type"
+  },
+  "improvement": "Help us improve",
+  "@improvement": {
+    "description": "Suggestion description"
+  },
+  "bugReport": "Bug Report",
+  "@bugReport": {
+    "description": "Bug report feedback type"
+  },
+  "issueFound": "Report technical issues",
+  "@issueFound": {
+    "description": "Bug report description"
+  },
+  "featureRequest": "Feature Request",
+  "@featureRequest": {
+    "description": "Feature request feedback type"
+  },
+  "newFeature": "Request new features",
+  "@newFeature": {
+    "description": "Feature request description"
+  },
+  "praise": "Praise",
+  "@praise": {
+    "description": "Praise feedback type"
+  },
+  "positiveFeedback": "Share positive experiences",
+  "@positiveFeedback": {
+    "description": "Praise description"
+  },
+  "other": "Other",
+  "@other": {
+    "description": "Other feedback type"
+  },
+  "otherFeedback": "Other feedback",
+  "@otherFeedback": {
+    "description": "Other description"
+  },
+  "feedbackContent": "Feedback Content",
+  "@feedbackContent": {
+    "description": "Feedback content label"
+  },
+  "feedbackHint": "Please describe your feedback in detail...",
+  "@feedbackHint": {
+    "description": "Feedback content hint"
+  },
+  "contactInfo": "Contact Information",
+  "@contactInfo": {
+    "description": "Contact info label"
+  },
+  "contactHint": "Email address (optional)",
+  "@contactHint": {
+    "description": "Contact info hint"
+  },
+  "contactOptional": "Optional - we may contact you for further details",
+  "@contactOptional": {
+    "description": "Contact optional message"
+  },
+  "submitFeedback": "Submit Feedback",
+  "@submitFeedback": {
+    "description": "Submit feedback button"
+  },
+  "pleaseEnterContent": "Please enter feedback content",
+  "@pleaseEnterContent": {
+    "description": "Content required validation"
+  },
+  "minLengthWarning": "Please provide more details (minimum 10 characters)",
+  "@minLengthWarning": {
+    "description": "Minimum length validation"
+  },
+  "overallAnalysis": "Overall Analysis",
+  "@overallAnalysis": {
+    "description": "Overall analysis button"
+  },
+  "sleepAnalysis": "Sleep Analysis",
+  "@sleepAnalysis": {
+    "description": "Sleep analysis button"
+  },
+  "dietAnalysis": "Diet Analysis",
+  "@dietAnalysis": {
+    "description": "Diet analysis button"
+  },
+  "exerciseAnalysis": "Exercise Analysis",
+  "@exerciseAnalysis": {
+    "description": "Exercise analysis button"
+  },
+  "moodAnalysis": "Mood Analysis",
+  "@moodAnalysis": {
+    "description": "Mood analysis button"
+  },
+  "shareYourInsight": "Share Your Insight",
+  "@shareYourInsight": {
+    "description": "Share insight dialog title"
+  },
+  "whatDoYouThink": "What do you think about health and longevity?",
+  "@whatDoYouThink": {
+    "description": "Share insight hint"
+  },
+  "share": "Share",
+  "@share": {
+    "description": "Share button"
+  },
+  "postShared": "Your post has been shared!",
+  "@postShared": {
+    "description": "Post shared success message"
+  },
+  "writeComment": "Write a comment...",
+  "@writeComment": {
+    "description": "Comment input hint"
+  },
+  "hot": "Hot",
+  "@hot": {
+    "description": "Hot filter"
+  },
+  "newest": "Newest",
+  "@newest": {
+    "description": "Newest filter"
+  },
+  "following": "Following",
+  "@following": {
+    "description": "Following filter"
+  },
+  "minutesAgo": "minutes ago",
+  "@minutesAgo": {
+    "description": "Minutes ago label"
+  },
+  "hoursAgo": "hours ago",
+  "@hoursAgo": {
+    "description": "Hours ago label"
+  },
+  "daysAgo": "days ago",
+  "@daysAgo": {
+    "description": "Days ago label"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button"
+  },
+  "noData": "No data available",
+  "@noData": {
+    "description": "No data message"
+  },
+  "avgSleepDuration": "Average Sleep Duration",
+  "@avgSleepDuration": {
+    "description": "Average sleep duration label"
+  },
+  "avgQuality": "Average Quality",
+  "@avgQuality": {
+    "description": "Average quality label"
+  },
+  "consistency": "Consistency",
+  "@consistency": {
+    "description": "Consistency label"
+  },
+  "totalMinutes": "Total Minutes",
+  "@totalMinutes": {
+    "description": "Total minutes label"
+  },
+  "totalCalories": "Total Calories",
+  "@totalCalories": {
+    "description": "Total calories label"
+  },
+  "avgIntensity": "Average Intensity",
+  "@avgIntensity": {
+    "description": "Average intensity label"
+  },
+  "frequency": "Frequency",
+  "@frequency": {
+    "description": "Frequency label"
+  },
+  "days": "days",
+  "@days": {
+    "description": "Days unit"
+  },
+  "avgCalories": "Average Calories",
+  "@avgCalories": {
+    "description": "Average calories label"
+  },
+  "avgProtein": "Average Protein",
+  "@avgProtein": {
+    "description": "Average protein label"
+  },
+  "avgCarbs": "Average Carbs",
+  "@avgCarbs": {
+    "description": "Average carbs label"
+  },
+  "avgFat": "Average Fat",
+  "@avgFat": {
+    "description": "Average fat label"
+  },
+  "avgMood": "Average Mood",
+  "@avgMood": {
+    "description": "Average mood label"
+  },
+  "stability": "Stability",
+  "@stability": {
+    "description": "Stability label"
+  },
+  "positiveDays": "Positive Days",
+  "@positiveDays": {
+    "description": "Positive days label"
+  },
+  "overallHealthScore": "Overall Health Score",
+  "@overallHealthScore": {
+    "description": "Overall health score label"
+  },
+  "distribution": "Distribution",
+  "@distribution": {
+    "description": "Distribution label"
+  },
+  "personalizedAdvice": "Personalized Advice",
+  "@personalizedAdvice": {
+    "description": "Personalized advice label"
+  },
+  "analysis": "Analysis",
+  "@analysis": {
+    "description": "Analysis label"
+  },
+  "musicUploaded": "Music uploaded successfully!",
+  "@musicUploaded": {
+    "description": "Music uploaded message"
+  },
+  "uploadFailed": "Upload failed, please try again",
+  "@uploadFailed": {
+    "description": "Upload failed message"
+  },
+  "editMusic": "Edit Music",
+  "@editMusic": {
+    "description": "Edit music dialog title"
+  },
+  "title": "Title",
+  "@title": {
+    "description": "Title label"
+  },
+  "artist": "Artist",
+  "@artist": {
+    "description": "Artist label"
+  },
+  "deleteMusicConfirm": "Are you sure you want to delete this music?",
+  "@deleteMusicConfirm": {
+    "description": "Delete music confirmation"
+  },
+  "musicDeleted": "Music deleted",
+  "@musicDeleted": {
+    "description": "Music deleted message"
+  },
+  "deleteRecordConfirm": "Are you sure you want to delete this record?",
+  "@deleteRecordConfirm": {
+    "description": "Delete record confirmation"
+  },
+  "timeRange": "Time Range",
+  "@timeRange": {
+    "description": "Time range label"
   }
 }

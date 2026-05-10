@@ -1,7 +1,7 @@
 class MeditationMusic {
   final String id;
-  final String title;
-  final String artist;
+  String title;
+  String artist;
   String url;
   final String coverUrl;
   final int duration;

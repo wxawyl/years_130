@@ -63,7 +63,7 @@ class FoodRecognitionResponse {
     );
   }
 
-  bool get isSuccess => errorCode == null;
+  bool get isSuccess => errorCode == null || errorCode == 0;
 
   bool get hasResults => results.isNotEmpty;
 }

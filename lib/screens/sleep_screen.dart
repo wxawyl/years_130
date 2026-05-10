@@ -5,6 +5,7 @@ import '../services/score_service.dart';
 import '../models/sleep_record.dart';
 import '../models/knowledge_item.dart';
 import '../l10n/app_localizations.dart';
+import 'analysis_screen.dart';
 
 class SleepScreen extends StatefulWidget {
   const SleepScreen({super.key});
@@ -64,7 +65,7 @@ class _SleepScreenState extends State<SleepScreen> {
     }
   }
 
-  Future<void> _saveRecord() async {
+  Future<void> _saveRecord({int? editId}) async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     String bedtimeStr = '${_bedtime.hour.toString().padLeft(2, '0')}:${_bedtime.minute.toString().padLeft(2, '0')}';
@@ -73,6 +74,7 @@ class _SleepScreenState extends State<SleepScreen> {
     double duration = _calculateSleepDuration();
 
     SleepRecord record = SleepRecord(
+      id: editId,
       date: today,
       bedtime: bedtimeStr,
       wakeTime: wakeTimeStr,
@@ -80,13 +82,63 @@ class _SleepScreenState extends State<SleepScreen> {
       quality: _sleepQuality,
     );
 
-    await _dbService.insertSleepRecord(record);
+    if (editId != null) {
+      await _dbService.updateSleepRecord(record);
+    } else {
+      await _dbService.insertSleepRecord(record);
+    }
     await _scoreService.calculateDailyScore(today);
     await _loadTodayRecords();
 
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.sleepRecordSaved)),
+      SnackBar(content: Text(editId != null ? l10n.recordUpdated : l10n.sleepRecordSaved)),
+    );
+  }
+
+  void _editRecord(SleepRecord record) {
+    setState(() {
+      _sleepQuality = record.quality ?? 3;
+      if (record.bedtime != null) {
+        List<String> parts = record.bedtime!.split(':');
+        _bedtime = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      }
+      if (record.wakeTime != null) {
+        List<String> parts = record.wakeTime!.split(':');
+        _wakeTime = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      }
+    });
+
+    _saveRecord(editId: record.id);
+  }
+
+  void _deleteRecord(SleepRecord record) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.confirmDelete),
+        content: Text(l10n.deleteRecordConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _dbService.deleteSleepRecord(record.id!);
+              await _scoreService.calculateDailyScore(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+              await _loadTodayRecords();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.recordDeleted)),
+              );
+            },
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -302,15 +354,34 @@ class _SleepScreenState extends State<SleepScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(_getQualityIcon(record.quality), color: const Color(0xFF66BB6A)),
-                              const SizedBox(width: 4),
-                              Text(_getQualityText(record.quality, l10n)),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _editRecord(record),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteRecord(record),
+                              ),
                             ],
                           ),
                         ),
                       );
                     },
                   ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AnalysisScreen(analysisType: AnalysisType.sleep)),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF66BB6A),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.bar_chart),
+              label: Text(l10n.sleepAnalysis, style: const TextStyle(fontSize: 16)),
+            ),
             const SizedBox(height: 20),
             Text(
               l10n.sleepEducation,

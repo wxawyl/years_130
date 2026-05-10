@@ -8,6 +8,7 @@ import '../models/knowledge_item.dart';
 import '../models/food_recognition_result.dart';
 import '../l10n/app_localizations.dart';
 import 'camera_recognition_screen.dart';
+import 'analysis_screen.dart';
 
 class DietScreen extends StatefulWidget {
   const DietScreen({super.key});
@@ -562,6 +563,20 @@ class _DietScreenState extends State<DietScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AnalysisScreen(analysisType: AnalysisType.diet)),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF7043),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.bar_chart),
+              label: Text(l10n.dietAnalysis, style: const TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(height: 20),
             Text(
               l10n.todayRecords,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -575,32 +590,34 @@ class _DietScreenState extends State<DietScreen> {
                     itemCount: _todayRecords.length,
                     itemBuilder: (context, index) {
                       var record = _todayRecords[index];
-                      return Slidable(
-                        endActionPane: ActionPane(
-                          motion: const DrawerMotion(),
-                          extentRatio: 0.25,
-                          children: [
-                            SlidableAction(
-                              label: l10n.edit,
-                              backgroundColor: Colors.blue,
-                              icon: Icons.edit,
-                              onPressed: (context) => _editRecord(record),
+                      return Card(
+                        child: ListTile(
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            SlidableAction(
-                              label: l10n.delete,
-                              backgroundColor: Colors.red,
-                              icon: Icons.delete,
-                              onPressed: (context) => _deleteRecord(record),
-                            ),
-                          ],
-                        ),
-                        child: Card(
-                          child: ListTile(
-                            title: Text('${record.mealTypeName}: ${record.foodName}'),
-                            subtitle: Text(
-                              '${record.calories * record.servings} kcal | ${record.protein * record.servings}g${l10n.protein}',
-                            ),
-                            trailing: Text('x${record.servings}'),
+                            child: const Icon(Icons.restaurant, color: Colors.orange),
+                          ),
+                          title: Text('${record.mealTypeName}: ${record.foodName}'),
+                          subtitle: Text(
+                            '${record.calories * record.servings} kcal | ${record.protein * record.servings}g ${l10n.protein}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('x${record.servings}'),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _editRecord(record),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteRecord(record),
+                              ),
+                            ],
                           ),
                         ),
                       );

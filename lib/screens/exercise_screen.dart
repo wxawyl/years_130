@@ -5,6 +5,7 @@ import '../services/score_service.dart';
 import '../models/exercise_record.dart';
 import '../models/knowledge_item.dart';
 import '../l10n/app_localizations.dart';
+import 'analysis_screen.dart';
 
 class ExerciseScreen extends StatefulWidget {
   const ExerciseScreen({super.key});
@@ -22,17 +23,54 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   int _duration = 30;
   double _caloriesBurned = 0;
   final List<Map<String, dynamic>> _exerciseTypes = [
-    {'name': 'walking', 'icon': Icons.directions_walk, 'calories': 5.5},
-    {'name': 'running', 'icon': Icons.directions_run, 'calories': 10},
-    {'name': 'cycling', 'icon': Icons.directions_bike, 'calories': 8},
-    {'name': 'swimming', 'icon': Icons.pool, 'calories': 9},
-    {'name': 'yoga', 'icon': Icons.self_improvement, 'calories': 3.5},
-    {'name': 'gym', 'icon': Icons.fitness_center, 'calories': 7},
+    {
+      'name': 'walking',
+      'icon': Icons.directions_walk,
+      'image': 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=300&h=300&fit=crop',
+      'color': Colors.green,
+      'calories': 5.5
+    },
+    {
+      'name': 'running',
+      'icon': Icons.directions_run,
+      'image': 'https://images.unsplash.com/photo-1461896836934-ffe607ba821?w=300&h=300&fit=crop',
+      'color': Colors.red,
+      'calories': 10
+    },
+    {
+      'name': 'cycling',
+      'icon': Icons.directions_bike,
+      'image': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop',
+      'color': Colors.blue,
+      'calories': 8
+    },
+    {
+      'name': 'swimming',
+      'icon': Icons.pool,
+      'image': 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=300&h=300&fit=crop',
+      'color': Colors.cyan,
+      'calories': 9
+    },
+    {
+      'name': 'pushups',
+      'icon': Icons.sports_gymnastics,
+      'image': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=300&h=300&fit=crop',
+      'color': Colors.orange,
+      'calories': 8
+    },
+    {
+      'name': 'legRaises',
+      'icon': Icons.sports_martial_arts,
+      'image': 'https://images.unsplash.com/photo-1549060293-54c9e3fa1d00?w=300&h=300&fit=crop',
+      'color': Colors.purple,
+      'calories': 6
+    },
   ];
 
   @override
   void initState() {
     super.initState();
+    _updateCalories();
     _loadData();
   }
 
@@ -70,18 +108,19 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
       case 4:
         return l10n.swimming;
       case 5:
-        return l10n.yoga;
+        return l10n.pushups;
       case 6:
-        return l10n.gym;
+        return l10n.legRaises;
       default:
         return l10n.walking;
     }
   }
 
-  Future<void> _saveRecord() async {
+  Future<void> _saveRecord({int? editId}) async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     ExerciseRecord record = ExerciseRecord(
+      id: editId,
       date: today,
       exerciseType: _exerciseType,
       subType: '',
@@ -90,13 +129,55 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
       caloriesBurned: _caloriesBurned,
     );
 
-    await _dbService.insertExerciseRecord(record);
+    if (editId != null) {
+      await _dbService.updateExerciseRecord(record);
+    } else {
+      await _dbService.insertExerciseRecord(record);
+    }
     await _scoreService.calculateDailyScore(today);
     await _loadTodayRecords();
 
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.exerciseRecordSaved)),
+      SnackBar(content: Text(editId != null ? l10n.recordUpdated : l10n.exerciseRecordSaved)),
+    );
+  }
+
+  void _editRecord(ExerciseRecord record) {
+    setState(() {
+      _exerciseType = record.exerciseType;
+      _duration = record.duration;
+      _caloriesBurned = record.caloriesBurned;
+    });
+  }
+
+  void _deleteRecord(ExerciseRecord record) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.confirmDelete),
+        content: Text(l10n.deleteRecordConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _dbService.deleteExerciseRecord(record.id!);
+              await _scoreService.calculateDailyScore(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+              await _loadTodayRecords();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.recordDeleted)),
+              );
+            },
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -125,7 +206,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               crossAxisCount: 3,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
+              childAspectRatio: 0.8,
               children: List.generate(_exerciseTypes.length, (index) {
                 int type = index + 1;
                 bool isSelected = _exerciseType == type;
@@ -139,23 +220,54 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                       side: isSelected
-                          ? const BorderSide(color: Color(0xFF42A5F5), width: 2)
+                          ? BorderSide(color: _exerciseTypes[index]['color'], width: 3)
                           : BorderSide.none,
                     ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          _exerciseTypes[index]['icon'],
-                          size: 36,
-                          color: isSelected ? const Color(0xFF42A5F5) : Colors.grey,
+                        Expanded(
+                          flex: 3,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                              image: DecorationImage(
+                                image: NetworkImage(_exerciseTypes[index]['image']),
+                                fit: BoxFit.cover,
+                                colorFilter: ColorFilter.mode(
+                                  _exerciseTypes[index]['color'].withOpacity(0.3),
+                                  BlendMode.color,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _getExerciseName(type, l10n),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? const Color(0xFF42A5F5) : Colors.grey[700],
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _exerciseTypes[index]['icon'],
+                                  size: 28,
+                                  color: isSelected 
+                                    ? _exerciseTypes[index]['color'] 
+                                    : Colors.grey[600],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _getExerciseName(type, l10n),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected 
+                                      ? _exerciseTypes[index]['color'] 
+                                      : Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -253,6 +365,20 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               child: Text(l10n.recordExercise, style: const TextStyle(fontSize: 16)),
             ),
             const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AnalysisScreen(analysisType: AnalysisType.exercise)),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF42A5F5),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.bar_chart),
+              label: Text(l10n.exerciseAnalysis, style: const TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(height: 20),
             Text(
               l10n.todayRecords,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -266,18 +392,19 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                     itemCount: _todayRecords.length,
                     itemBuilder: (context, index) {
                       var record = _todayRecords[index];
+                      var exerciseType = _exerciseTypes[record.exerciseType - 1];
                       return Card(
                         child: ListTile(
                           leading: Container(
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF42A5F5).withOpacity(0.1),
+                              color: exerciseType['color'].withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
-                              _exerciseTypes[record.exerciseType - 1]['icon'],
-                              color: const Color(0xFF42A5F5),
+                              exerciseType['icon'],
+                              color: exerciseType['color'],
                             ),
                           ),
                           title: Text(_getExerciseName(record.exerciseType, l10n)),
@@ -290,6 +417,15 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                               Text(
                                 '${record.caloriesBurned.toStringAsFixed(0)} kcal',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(width: 16),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _editRecord(record),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteRecord(record),
                               ),
                             ],
                           ),

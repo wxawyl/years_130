@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseService().initDatabase();
+  await DatabaseService().database;
 
   final localeService = LocaleService();
   await localeService.loadLocale();

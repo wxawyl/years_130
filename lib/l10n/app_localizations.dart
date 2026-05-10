@@ -518,17 +518,17 @@ abstract class AppLocalizations {
   /// **'Swimming'**
   String get swimming;
 
-  /// Yoga exercise
+  /// Push-ups exercise
   ///
   /// In en, this message translates to:
-  /// **'Yoga'**
-  String get yoga;
+  /// **'Push-ups'**
+  String get pushups;
 
-  /// Gym exercise
+  /// Leg raises exercise
   ///
   /// In en, this message translates to:
-  /// **'Gym'**
-  String get gym;
+  /// **'Leg Raises'**
+  String get legRaises;
 
   /// Mood screen title
   ///
@@ -685,6 +685,558 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// Developer center label
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get developer;
+
+  /// Developer center screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Developer Center'**
+  String get developerCenter;
+
+  /// Developer center hero title
+  ///
+  /// In en, this message translates to:
+  /// **'Build Together for Health'**
+  String get buildTogether;
+
+  /// Developer center hero description
+  ///
+  /// In en, this message translates to:
+  /// **'Join our community of developers to build the future of health technology'**
+  String get developerDescription;
+
+  /// Get started button
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// Plugin market section
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin Market'**
+  String get pluginMarket;
+
+  /// Plugin market description
+  ///
+  /// In en, this message translates to:
+  /// **'Extend app functionality with plugins'**
+  String get pluginMarketDescription;
+
+  /// API documentation section
+  ///
+  /// In en, this message translates to:
+  /// **'API Docs'**
+  String get apiDocs;
+
+  /// API docs description
+  ///
+  /// In en, this message translates to:
+  /// **'Access our RESTful API documentation'**
+  String get apiDocsDescription;
+
+  /// GitHub section
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub'**
+  String get github;
+
+  /// GitHub description
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute to our open source project'**
+  String get githubDescription;
+
+  /// Community section
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get community;
+
+  /// Community description
+  ///
+  /// In en, this message translates to:
+  /// **'Connect with other developers'**
+  String get communityDescription;
+
+  /// AI model market section
+  ///
+  /// In en, this message translates to:
+  /// **'AI Model Market'**
+  String get aiMarket;
+
+  /// AI market description
+  ///
+  /// In en, this message translates to:
+  /// **'Share and discover AI models'**
+  String get aiMarketDescription;
+
+  /// Contributors section
+  ///
+  /// In en, this message translates to:
+  /// **'Contributors'**
+  String get contributors;
+
+  /// Contributors description
+  ///
+  /// In en, this message translates to:
+  /// **'Meet our amazing contributors'**
+  String get contributorsDescription;
+
+  /// Top contributors section title
+  ///
+  /// In en, this message translates to:
+  /// **'Top Contributors'**
+  String get topContributors;
+
+  /// Plugins count label
+  ///
+  /// In en, this message translates to:
+  /// **'Plugins'**
+  String get plugins;
+
+  /// Stars count label
+  ///
+  /// In en, this message translates to:
+  /// **'Stars'**
+  String get stars;
+
+  /// Commits count label
+  ///
+  /// In en, this message translates to:
+  /// **'Commits'**
+  String get commits;
+
+  /// Welcome dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Developer!'**
+  String get welcomeDeveloper;
+
+  /// Welcome message for developers
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for joining our developer community! Together, we can build amazing health solutions that benefit people around the world.'**
+  String get developerWelcomeMessage;
+
+  /// Coming soon placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get comingSoon;
+
+  /// Feedback label
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get feedback;
+
+  /// Feedback hero title
+  ///
+  /// In en, this message translates to:
+  /// **'Your Voice Matters'**
+  String get yourVoiceMatters;
+
+  /// Feedback hero description
+  ///
+  /// In en, this message translates to:
+  /// **'Help us improve by sharing your thoughts and ideas'**
+  String get feedbackDescription;
+
+  /// Feedback type label
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback Type'**
+  String get feedbackType;
+
+  /// Suggestion feedback type
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion'**
+  String get suggestion;
+
+  /// Suggestion description
+  ///
+  /// In en, this message translates to:
+  /// **'Help us improve'**
+  String get improvement;
+
+  /// Bug report feedback type
+  ///
+  /// In en, this message translates to:
+  /// **'Bug Report'**
+  String get bugReport;
+
+  /// Bug report description
+  ///
+  /// In en, this message translates to:
+  /// **'Report technical issues'**
+  String get issueFound;
+
+  /// Feature request feedback type
+  ///
+  /// In en, this message translates to:
+  /// **'Feature Request'**
+  String get featureRequest;
+
+  /// Feature request description
+  ///
+  /// In en, this message translates to:
+  /// **'Request new features'**
+  String get newFeature;
+
+  /// Praise feedback type
+  ///
+  /// In en, this message translates to:
+  /// **'Praise'**
+  String get praise;
+
+  /// Praise description
+  ///
+  /// In en, this message translates to:
+  /// **'Share positive experiences'**
+  String get positiveFeedback;
+
+  /// Other feedback type
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// Other description
+  ///
+  /// In en, this message translates to:
+  /// **'Other feedback'**
+  String get otherFeedback;
+
+  /// Feedback content label
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback Content'**
+  String get feedbackContent;
+
+  /// Feedback content hint
+  ///
+  /// In en, this message translates to:
+  /// **'Please describe your feedback in detail...'**
+  String get feedbackHint;
+
+  /// Contact info label
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Information'**
+  String get contactInfo;
+
+  /// Contact info hint
+  ///
+  /// In en, this message translates to:
+  /// **'Email address (optional)'**
+  String get contactHint;
+
+  /// Contact optional message
+  ///
+  /// In en, this message translates to:
+  /// **'Optional - we may contact you for further details'**
+  String get contactOptional;
+
+  /// Submit feedback button
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Feedback'**
+  String get submitFeedback;
+
+  /// Content required validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter feedback content'**
+  String get pleaseEnterContent;
+
+  /// Minimum length validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide more details (minimum 10 characters)'**
+  String get minLengthWarning;
+
+  /// Overall analysis button
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Analysis'**
+  String get overallAnalysis;
+
+  /// Sleep analysis button
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep Analysis'**
+  String get sleepAnalysis;
+
+  /// Diet analysis button
+  ///
+  /// In en, this message translates to:
+  /// **'Diet Analysis'**
+  String get dietAnalysis;
+
+  /// Exercise analysis button
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Analysis'**
+  String get exerciseAnalysis;
+
+  /// Mood analysis button
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Analysis'**
+  String get moodAnalysis;
+
+  /// Share insight dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Share Your Insight'**
+  String get shareYourInsight;
+
+  /// Share insight hint
+  ///
+  /// In en, this message translates to:
+  /// **'What do you think about health and longevity?'**
+  String get whatDoYouThink;
+
+  /// Share button
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// Post shared success message
+  ///
+  /// In en, this message translates to:
+  /// **'Your post has been shared!'**
+  String get postShared;
+
+  /// Comment input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment...'**
+  String get writeComment;
+
+  /// Hot filter
+  ///
+  /// In en, this message translates to:
+  /// **'Hot'**
+  String get hot;
+
+  /// Newest filter
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get newest;
+
+  /// Following filter
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get following;
+
+  /// Minutes ago label
+  ///
+  /// In en, this message translates to:
+  /// **'minutes ago'**
+  String get minutesAgo;
+
+  /// Hours ago label
+  ///
+  /// In en, this message translates to:
+  /// **'hours ago'**
+  String get hoursAgo;
+
+  /// Days ago label
+  ///
+  /// In en, this message translates to:
+  /// **'days ago'**
+  String get daysAgo;
+
+  /// OK button
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No data message
+  ///
+  /// In en, this message translates to:
+  /// **'No data available'**
+  String get noData;
+
+  /// Average sleep duration label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Sleep Duration'**
+  String get avgSleepDuration;
+
+  /// Average quality label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Quality'**
+  String get avgQuality;
+
+  /// Consistency label
+  ///
+  /// In en, this message translates to:
+  /// **'Consistency'**
+  String get consistency;
+
+  /// Total minutes label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Minutes'**
+  String get totalMinutes;
+
+  /// Total calories label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Calories'**
+  String get totalCalories;
+
+  /// Average intensity label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Intensity'**
+  String get avgIntensity;
+
+  /// Frequency label
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get frequency;
+
+  /// Days unit
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get days;
+
+  /// Average calories label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Calories'**
+  String get avgCalories;
+
+  /// Average protein label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Protein'**
+  String get avgProtein;
+
+  /// Average carbs label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Carbs'**
+  String get avgCarbs;
+
+  /// Average fat label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Fat'**
+  String get avgFat;
+
+  /// Average mood label
+  ///
+  /// In en, this message translates to:
+  /// **'Average Mood'**
+  String get avgMood;
+
+  /// Stability label
+  ///
+  /// In en, this message translates to:
+  /// **'Stability'**
+  String get stability;
+
+  /// Positive days label
+  ///
+  /// In en, this message translates to:
+  /// **'Positive Days'**
+  String get positiveDays;
+
+  /// Overall health score label
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Health Score'**
+  String get overallHealthScore;
+
+  /// Distribution label
+  ///
+  /// In en, this message translates to:
+  /// **'Distribution'**
+  String get distribution;
+
+  /// Personalized advice label
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized Advice'**
+  String get personalizedAdvice;
+
+  /// Analysis label
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis'**
+  String get analysis;
+
+  /// Music uploaded message
+  ///
+  /// In en, this message translates to:
+  /// **'Music uploaded successfully!'**
+  String get musicUploaded;
+
+  /// Upload failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed, please try again'**
+  String get uploadFailed;
+
+  /// Edit music dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Music'**
+  String get editMusic;
+
+  /// Title label
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get title;
+
+  /// Artist label
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get artist;
+
+  /// Delete music confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this music?'**
+  String get deleteMusicConfirm;
+
+  /// Music deleted message
+  ///
+  /// In en, this message translates to:
+  /// **'Music deleted'**
+  String get musicDeleted;
+
+  /// Delete record confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this record?'**
+  String get deleteRecordConfirm;
+
+  /// Time range label
+  ///
+  /// In en, this message translates to:
+  /// **'Time Range'**
+  String get timeRange;
 }
 
 class _AppLocalizationsDelegate

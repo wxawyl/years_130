@@ -1,6 +1,5 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import '../models/sleep_record.dart';
 import '../models/diet_record.dart';
 import '../models/exercise_record.dart';
@@ -8,236 +7,288 @@ import '../models/mood_record.dart';
 import '../models/daily_score.dart';
 import '../models/knowledge_item.dart';
 import '../models/reminder.dart';
+import '../models/meditation_music.dart';
+
+class MemoryDatabase {
+  static MemoryDatabase? _instance;
+  List<Map<String, dynamic>> _sleepRecords = [];
+  List<Map<String, dynamic>> _dietRecords = [];
+  List<Map<String, dynamic>> _exerciseRecords = [];
+  List<Map<String, dynamic>> _moodRecords = [];
+  List<Map<String, dynamic>> _dailyScores = [];
+  List<Map<String, dynamic>> _knowledgeBase = [];
+  List<Map<String, dynamic>> _reminders = [];
+  List<Map<String, dynamic>> _habitTracking = [];
+  List<Map<String, dynamic>> _sharePosts = [];
+  List<Map<String, dynamic>> _customMusic = [];
+  int _nextId = 1;
+  bool _isInitialized = false;
+
+  MemoryDatabase._();
+
+  factory MemoryDatabase() {
+    _instance ??= MemoryDatabase._();
+    return _instance!;
+  }
+
+  int _generateId() => _nextId++;
+
+  Future<void> _initializeIfNeeded() async {
+    if (_isInitialized) return;
+    
+    _knowledgeBase = [
+      {'id': _generateId(), 'category': 1, 'title': '良好睡眠的重要性', 'content': '睡眠是身体修复和充电的时间。成年人建议每天睡7-9小时。深度睡眠有助于记忆巩固和身体恢复。', 'source': '世界卫生组织', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'category': 1, 'title': '改善睡眠质量的方法', 'content': '保持规律的睡眠时间，创建舒适的睡眠环境，避免睡前使用电子设备，限制咖啡因摄入。', 'source': '睡眠研究中心', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'category': 2, 'title': '均衡饮食的原则', 'content': '每天摄入适量的蛋白质、碳水化合物和健康脂肪。多吃蔬菜和水果，保证营养均衡。', 'source': '中国营养学会', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'category': 2, 'title': '健康饮水习惯', 'content': '每天饮水量建议为1500-2000毫升。分多次小口饮用，避免一次性大量饮水。', 'source': '健康指南', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'category': 3, 'title': '有氧运动的好处', 'content': '有氧运动可以增强心肺功能，提高新陈代谢，有助于减肥和保持健康体重。', 'source': '运动医学杂志', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'category': 3, 'title': '适度运动的建议', 'content': '每周至少进行150分钟中等强度有氧运动，或75分钟高强度运动。结合力量训练效果更佳。', 'source': '美国心脏协会', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'category': 4, 'title': '保持良好心态的方法', 'content': '学会感恩，保持积极乐观的心态，定期进行冥想和放松训练，与他人保持良好关系。', 'source': '心理健康协会', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'category': 4, 'title': '压力管理技巧', 'content': '通过运动、冥想、深呼吸等方式缓解压力。学会说"不"，合理安排工作和休息时间。', 'source': '心理研究中心', 'is_video': 0, 'url': '', 'created_at': DateTime.now().toIso8601String()},
+    ];
+
+    _reminders = [
+      {'id': _generateId(), 'type': 1, 'time': '22:30', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '该睡觉了，保持规律作息有助于健康！', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'type': 2, 'time': '09:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '记得喝水，保持身体水分平衡', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'type': 2, 'time': '11:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '休息一下，喝杯水吧', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'type': 2, 'time': '15:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '下午好，记得补充水分', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'type': 2, 'time': '17:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '下班前再喝一杯水', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'type': 3, 'time': '07:00', 'enabled': 0, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '早上好，该运动了！', 'created_at': DateTime.now().toIso8601String()},
+      {'id': _generateId(), 'type': 4, 'time': '20:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '放松一下，进行冥想练习吧', 'created_at': DateTime.now().toIso8601String()},
+    ];
+
+    _isInitialized = true;
+  }
+
+  Future<int> insert(String table, Map<String, dynamic> data) async {
+    await _initializeIfNeeded();
+    data['id'] = _generateId();
+    data['created_at'] = DateTime.now().toIso8601String();
+    
+    switch (table) {
+      case 'sleep_records':
+        _sleepRecords.add(data);
+        break;
+      case 'diet_records':
+        _dietRecords.add(data);
+        break;
+      case 'exercise_records':
+        _exerciseRecords.add(data);
+        break;
+      case 'mood_records':
+        _moodRecords.add(data);
+        break;
+      case 'daily_scores':
+        _dailyScores.add(data);
+        break;
+      case 'habit_tracking':
+        _habitTracking.add(data);
+        break;
+      case 'share_posts':
+        _sharePosts.add(data);
+        break;
+      case 'custom_music':
+        _customMusic.add(data);
+        break;
+    }
+    return data['id'];
+  }
+
+  Future<List<Map<String, dynamic>>> query(String table, {String? where, List<dynamic>? whereArgs, int? limit}) async {
+    await _initializeIfNeeded();
+    List<Map<String, dynamic>> records;
+    
+    switch (table) {
+      case 'sleep_records':
+        records = List.from(_sleepRecords);
+        break;
+      case 'diet_records':
+        records = List.from(_dietRecords);
+        break;
+      case 'exercise_records':
+        records = List.from(_exerciseRecords);
+        break;
+      case 'mood_records':
+        records = List.from(_moodRecords);
+        break;
+      case 'daily_scores':
+        records = List.from(_dailyScores);
+        break;
+      case 'knowledge_base':
+        records = List.from(_knowledgeBase);
+        break;
+      case 'reminders':
+        records = List.from(_reminders);
+        break;
+      case 'habit_tracking':
+        records = List.from(_habitTracking);
+        break;
+      case 'share_posts':
+        records = List.from(_sharePosts);
+        break;
+      case 'custom_music':
+        records = List.from(_customMusic);
+        break;
+      default:
+        records = [];
+    }
+
+    if (where != null && whereArgs != null) {
+      records = records.where((record) {
+        if (where.contains('date = ?')) {
+          return record['date'] == whereArgs[0];
+        }
+        if (where.contains('date >= ?')) {
+          return record['date'] != null && record['date'] >= whereArgs[0];
+        }
+        if (where.contains('category = ?')) {
+          return record['category'] == whereArgs[0];
+        }
+        if (where.contains('habit_id = ? AND date = ?')) {
+          return record['habit_id'] == whereArgs[0] && record['date'] == whereArgs[1];
+        }
+        if (where.contains('id = ?')) {
+          return record['id'] == whereArgs[0];
+        }
+        return true;
+      }).toList();
+    }
+
+    if (limit != null) {
+      records = records.take(limit).toList();
+    }
+
+    return records;
+  }
+
+  Future<int> update(String table, Map<String, dynamic> data, {String? where, List<dynamic>? whereArgs}) async {
+    await _initializeIfNeeded();
+    int updated = 0;
+    int id = whereArgs?.first ?? data['id'];
+
+    switch (table) {
+      case 'sleep_records':
+        updated = _updateRecord(_sleepRecords, data, id);
+        break;
+      case 'diet_records':
+        updated = _updateRecord(_dietRecords, data, id);
+        break;
+      case 'exercise_records':
+        updated = _updateRecord(_exerciseRecords, data, id);
+        break;
+      case 'mood_records':
+        updated = _updateRecord(_moodRecords, data, id);
+        break;
+      case 'reminders':
+        updated = _updateRecord(_reminders, data, id);
+        break;
+      case 'habit_tracking':
+        if (where?.contains('habit_id = ? AND date = ?') ?? false) {
+          final habitId = whereArgs?[0];
+          final date = whereArgs?[1];
+          for (var i = 0; i < _habitTracking.length; i++) {
+            if (_habitTracking[i]['habit_id'] == habitId && _habitTracking[i]['date'] == date) {
+              _habitTracking[i] = {..._habitTracking[i], ...data};
+              updated = 1;
+              break;
+            }
+          }
+        }
+        break;
+    }
+    return updated;
+  }
+
+  int _updateRecord(List<Map<String, dynamic>> records, Map<String, dynamic> data, int id) {
+    for (var i = 0; i < records.length; i++) {
+      if (records[i]['id'] == id) {
+        records[i] = {...records[i], ...data};
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+  Future<int> delete(String table, {String? where, List<dynamic>? whereArgs}) async {
+    await _initializeIfNeeded();
+    int id = whereArgs?.first ?? 0;
+    int deleted = 0;
+
+    switch (table) {
+      case 'sleep_records':
+        deleted = _deleteRecord(_sleepRecords, id);
+        break;
+      case 'diet_records':
+        deleted = _deleteRecord(_dietRecords, id);
+        break;
+      case 'exercise_records':
+        deleted = _deleteRecord(_exerciseRecords, id);
+        break;
+      case 'mood_records':
+        deleted = _deleteRecord(_moodRecords, id);
+        break;
+      case 'custom_music':
+        deleted = _deleteRecord(_customMusic, id);
+        break;
+    }
+    return deleted;
+  }
+
+  int _deleteRecord(List<Map<String, dynamic>> records, int id) {
+    int initialLength = records.length;
+    records.removeWhere((r) => r['id'] == id);
+    return initialLength - records.length;
+  }
+}
 
 class DatabaseService {
-  static Database? _database;
+  static MemoryDatabase? _memoryDb;
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await initDatabase();
-    return _database!;
+  Future<dynamic> get database async {
+    _memoryDb ??= MemoryDatabase();
+    await _memoryDb!._initializeIfNeeded();
+    return _memoryDb!;
   }
 
-  Future<Database> initDatabase() async {
-    final documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = join(documentsDirectory.path, 'health_life.db');
-    return await openDatabase(
-      path,
-      version: 2,
-      onCreate: _createDatabase,
-      onUpgrade: _onUpgradeDatabase,
-    );
-  }
+  Future<void> generateDemoData() async {
+    final db = await database;
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final yesterday = DateFormat('yyyy-MM-dd').format(DateTime.now().subtract(const Duration(days: 1)));
 
-  Future<void> _onUpgradeDatabase(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.execute('''
-        ALTER TABLE diet_records
-        ADD COLUMN food_image TEXT
-      ''');
-      await db.execute('''
-        ALTER TABLE diet_records
-        ADD COLUMN recognition_confidence REAL
-      ''');
-    }
-  }
+    await db.insert('sleep_records', {
+      'date': today,
+      'bed_time': '22:30',
+      'wake_time': '06:30',
+      'duration': 8.0,
+      'quality': 4,
+      'deep_sleep_ratio': 0.25,
+    });
 
-  Future<void> _createDatabase(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE user_settings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        age INTEGER,
-        gender TEXT,
-        height REAL,
-        weight REAL,
-        target_sleep_hours REAL DEFAULT 8,
-        target_calories INTEGER DEFAULT 2000,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
+    await db.insert('diet_records', {
+      'date': today,
+      'meal_type': 1,
+      'food_name': '燕麦粥+鸡蛋',
+      'calories': 350,
+      'protein': 15,
+      'carbs': 45,
+      'fat': 10,
+      'servings': 1,
+    });
 
-    await db.execute('''
-      CREATE TABLE sleep_records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        bed_time TEXT,
-        wake_time TEXT,
-        duration REAL,
-        quality INTEGER,
-        deep_sleep_ratio REAL,
-        notes TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
+    await db.insert('exercise_records', {
+      'date': today,
+      'type': 1,
+      'sub_type': '跑步',
+      'duration': 30,
+      'intensity': 4,
+      'calories_burned': 200,
+    });
 
-    await db.execute('''
-      CREATE TABLE diet_records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        meal_type INTEGER,
-        food_name TEXT,
-        calories REAL,
-        protein REAL,
-        carbs REAL,
-        fat REAL,
-        servings REAL,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE exercise_records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        type INTEGER,
-        sub_type TEXT,
-        duration INTEGER,
-        intensity INTEGER,
-        calories_burned REAL,
-        steps INTEGER,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE mood_records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        mood_score INTEGER,
-        stress_level INTEGER,
-        diary TEXT,
-        gratitude TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE daily_scores (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        sleep_score REAL,
-        diet_score REAL,
-        exercise_score REAL,
-        mood_score REAL,
-        total_score REAL,
-        suggestions TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE knowledge_base (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category INTEGER,
-        title TEXT,
-        content TEXT,
-        source TEXT,
-        is_video INTEGER DEFAULT 0,
-        url TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE reminders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        type INTEGER,
-        time TEXT,
-        enabled INTEGER DEFAULT 1,
-        repeat_days TEXT,
-        message TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE habit_tracking (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        habit_id INTEGER,
-        habit_name TEXT,
-        date TEXT NOT NULL,
-        completed INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    await _insertInitialKnowledge(db);
-    await _insertInitialReminders(db);
-  }
-
-  Future<void> _insertInitialKnowledge(Database db) async {
-    List<Map<String, dynamic>> knowledgeItems = [
-      {
-        'category': 1,
-        'title': '良好睡眠的重要性',
-        'content': '睡眠是身体修复和充电的时间。成年人建议每天睡7-9小时。深度睡眠有助于记忆巩固和身体恢复。',
-        'source': '世界卫生组织'
-      },
-      {
-        'category': 1,
-        'title': '改善睡眠质量的方法',
-        'content': '保持规律的睡眠时间，创建舒适的睡眠环境，避免睡前使用电子设备，限制咖啡因摄入。',
-        'source': '睡眠研究中心'
-      },
-      {
-        'category': 2,
-        'title': '均衡饮食的原则',
-        'content': '每天摄入适量的蛋白质、碳水化合物和健康脂肪。多吃蔬菜和水果，保证营养均衡。',
-        'source': '中国营养学会'
-      },
-      {
-        'category': 2,
-        'title': '健康饮水习惯',
-        'content': '每天饮水量建议为1500-2000毫升。分多次小口饮用，避免一次性大量饮水。',
-        'source': '健康指南'
-      },
-      {
-        'category': 3,
-        'title': '有氧运动的好处',
-        'content': '有氧运动可以增强心肺功能，提高新陈代谢，有助于减肥和保持健康体重。',
-        'source': '运动医学杂志'
-      },
-      {
-        'category': 3,
-        'title': '适度运动的建议',
-        'content': '每周至少进行150分钟中等强度有氧运动，或75分钟高强度运动。结合力量训练效果更佳。',
-        'source': '美国心脏协会'
-      },
-      {
-        'category': 4,
-        'title': '保持良好心态的方法',
-        'content': '学会感恩，保持积极乐观的心态，定期进行冥想和放松训练，与他人保持良好关系。',
-        'source': '心理健康协会'
-      },
-      {
-        'category': 4,
-        'title': '压力管理技巧',
-        'content': '通过运动、冥想、深呼吸等方式缓解压力。学会说"不"，合理安排工作和休息时间。',
-        'source': '心理研究中心'
-      }
-    ];
-
-    for (var item in knowledgeItems) {
-      await db.insert('knowledge_base', item);
-    }
-  }
-
-  Future<void> _insertInitialReminders(Database db) async {
-    List<Map<String, dynamic>> reminders = [
-      {'type': 1, 'time': '22:30', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '该睡觉了，保持规律作息有助于健康！'},
-      {'type': 2, 'time': '09:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '记得喝水，保持身体水分平衡'},
-      {'type': 2, 'time': '11:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '休息一下，喝杯水吧'},
-      {'type': 2, 'time': '15:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '下午好，记得补充水分'},
-      {'type': 2, 'time': '17:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '下班前再喝一杯水'},
-      {'type': 3, 'time': '07:00', 'enabled': 0, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '早上好，该运动了！'},
-      {'type': 4, 'time': '20:00', 'enabled': 1, 'repeat_days': '[0,1,2,3,4,5,6]', 'message': '放松一下，进行冥想练习吧'}
-    ];
-
-    for (var reminder in reminders) {
-      await db.insert('reminders', reminder);
-    }
+    await db.insert('mood_records', {
+      'date': today,
+      'mood_score': 4,
+      'diary': '感觉很好',
+    });
   }
 
   Future<int> insertSleepRecord(SleepRecord record) async {
@@ -274,6 +325,16 @@ class DatabaseService {
     );
   }
 
+  Future<List<SleepRecord>> getSleepRecordsByDateRange(String startDate) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'sleep_records',
+      where: 'date >= ?',
+      whereArgs: [startDate],
+    );
+    return List.generate(maps.length, (i) => SleepRecord.fromMap(maps[i]));
+  }
+
   Future<int> insertDietRecord(DietRecord record) async {
     final db = await database;
     return await db.insert('diet_records', record.toMap());
@@ -308,6 +369,16 @@ class DatabaseService {
     );
   }
 
+  Future<List<DietRecord>> getDietRecordsByDateRange(String startDate) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'diet_records',
+      where: 'date >= ?',
+      whereArgs: [startDate],
+    );
+    return List.generate(maps.length, (i) => DietRecord.fromMap(maps[i]));
+  }
+
   Future<int> insertExerciseRecord(ExerciseRecord record) async {
     final db = await database;
     return await db.insert('exercise_records', record.toMap());
@@ -340,6 +411,16 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<List<ExerciseRecord>> getExerciseRecordsByDateRange(String startDate) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'exercise_records',
+      where: 'date >= ?',
+      whereArgs: [startDate],
+    );
+    return List.generate(maps.length, (i) => ExerciseRecord.fromMap(maps[i]));
   }
 
   Future<int> insertMoodRecord(MoodRecord record) async {
@@ -386,6 +467,16 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<List<MoodRecord>> getMoodRecordsByDateRange(String startDate) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'mood_records',
+      where: 'date >= ?',
+      whereArgs: [startDate],
+    );
+    return List.generate(maps.length, (i) => MoodRecord.fromMap(maps[i]));
   }
 
   Future<int> insertDailyScore(DailyScore score) async {
@@ -461,5 +552,35 @@ class DatabaseService {
     );
     if (maps.isEmpty) return null;
     return maps.first['completed'] as int;
+  }
+
+  Future<int> insertCustomMusic(MeditationMusic music) async {
+    final db = await database;
+    return await db.insert('custom_music', music.toMap());
+  }
+
+  Future<List<MeditationMusic>> getCustomMusic() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('custom_music');
+    return List.generate(maps.length, (i) => MeditationMusic.fromMap(maps[i]));
+  }
+
+  Future<int> deleteCustomMusic(String musicId) async {
+    final db = await database;
+    return await db.delete(
+      'custom_music',
+      where: 'id = ?',
+      whereArgs: [musicId],
+    );
+  }
+
+  Future<int> updateCustomMusic(MeditationMusic music) async {
+    final db = await database;
+    return await db.update(
+      'custom_music',
+      music.toMap(),
+      where: 'music_id = ?',
+      whereArgs: [music.id],
+    );
   }
 }
