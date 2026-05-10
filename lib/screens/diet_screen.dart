@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import '../services/database_service.dart';
+import '../services/database_service_unified.dart';
 import '../services/score_service.dart';
 import '../models/diet_record.dart';
 import '../models/knowledge_item.dart';
@@ -17,7 +17,7 @@ class DietScreen extends StatefulWidget {
 }
 
 class _DietScreenState extends State<DietScreen> {
-  final _dbService = DatabaseService();
+  final _dbService = DatabaseServiceUnified();
   final _scoreService = ScoreService();
   int _mealType = 1;
   final _foodNameController = TextEditingController();

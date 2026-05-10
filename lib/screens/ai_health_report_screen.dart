@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ai_health_report.dart';
 import '../services/ai_health_service.dart';
-import '../services/database_service.dart';
+import '../services/database_service_unified.dart';
 
 class AIHealthReportScreen extends StatefulWidget {
   const AIHealthReportScreen({super.key});
@@ -11,7 +11,7 @@ class AIHealthReportScreen extends StatefulWidget {
 }
 
 class _AIHealthReportScreenState extends State<AIHealthReportScreen> {
-  final DatabaseService _dbService = DatabaseService();
+  final DatabaseServiceUnified _dbService = DatabaseServiceUnified();
   AIHealthService? _aiService;
   AIHealthReport? _currentReport;
   List<AIHealthReport>? _historicalReports;

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:live_to_130/screens/home_screen.dart';
-import 'package:live_to_130/services/database_service.dart';
+import 'package:live_to_130/services/database_service_unified.dart';
 import 'package:live_to_130/services/locale_service.dart';
 import 'package:live_to_130/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseService().initDatabase();
+  await DatabaseServiceUnified().initDatabase();
 
   final localeService = LocaleService();
   await localeService.loadLocale();

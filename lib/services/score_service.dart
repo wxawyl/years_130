@@ -4,10 +4,10 @@ import '../models/diet_record.dart';
 import '../models/exercise_record.dart';
 import '../models/mood_record.dart';
 import '../models/daily_score.dart';
-import '../services/database_service.dart';
+import '../services/database_service_unified.dart';
 
 class ScoreService {
-  final DatabaseService _dbService = DatabaseService();
+  final DatabaseServiceUnified _dbService = DatabaseServiceUnified();
 
   Future<double> calculateSleepScore(String date) async {
     final records = await _dbService.getSleepRecords(date);

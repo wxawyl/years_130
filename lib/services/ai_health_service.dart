@@ -5,7 +5,7 @@ import '../models/exercise_record.dart';
 import '../models/mood_record.dart';
 import '../models/user_settings.dart';
 import '../models/ai_health_report.dart';
-import 'database_service.dart';
+import 'database_service_unified.dart';
 
 class AIHealthService {
   // 专业提示词模板 - 健康专家人设
@@ -39,7 +39,7 @@ class AIHealthService {
 }
 ''';
 
-  final DatabaseService _dbService;
+  final DatabaseServiceUnified _dbService;
 
   AIHealthService(this._dbService);
 

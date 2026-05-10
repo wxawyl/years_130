@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user_settings.dart';
-import '../services/database_service.dart';
+import '../services/database_service_unified.dart';
 
 class HealthProfileScreen extends StatefulWidget {
   const HealthProfileScreen({super.key});
@@ -11,7 +11,7 @@ class HealthProfileScreen extends StatefulWidget {
 
 class _HealthProfileScreenState extends State<HealthProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final DatabaseService _dbService = DatabaseService();
+  final DatabaseServiceUnified _dbService = DatabaseServiceUnified();
   UserSettings? _settings;
   bool _isLoading = true;
 

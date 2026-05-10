@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/database_service.dart';
+import '../services/database_service_unified.dart';
 import '../services/score_service.dart';
 import '../models/exercise_record.dart';
 import '../models/knowledge_item.dart';
@@ -14,7 +14,7 @@ class ExerciseScreen extends StatefulWidget {
 }
 
 class _ExerciseScreenState extends State<ExerciseScreen> {
-  final _dbService = DatabaseService();
+  final _dbService = DatabaseServiceUnified();
   final _scoreService = ScoreService();
   List<ExerciseRecord> _todayRecords = [];
   List<KnowledgeItem> _knowledgeItems = [];
