@@ -11,12 +11,16 @@ class FoodRecognitionService {
   static const String _tokenKey = 'baidu_access_token';
   static const String _tokenExpiryKey = 'baidu_token_expiry';
 
+  // 后端代理API（Web使用
+  static const String _backendUrl = 'http://localhost:5000/api/recognize-dish';
+
+  // 百度原生API（原生使用
   static const String _dishRecognizeUrl =
       'https://aip.baidubce.com/rest/2.0/image-classify/v2/dish';
   static const String _tokenUrl =
       'https://aip.baidubce.com/oauth/2.0/token';
 
-  // 常用食物数据库（Web环境的备用方案）
+  // 常用食物数据库（备用方案）
   static final List<Map<String, dynamic>> _foodDatabase = [
     {'name': '红烧肉', 'calorie': 520, 'category': '肉类'},
     {'name': '宫保鸡丁', 'calorie': 180, 'category': '肉类'},
@@ -62,7 +66,7 @@ class FoodRecognitionService {
 
   Future<String?> _getAccessToken() async {
     if (kIsWeb) {
-      // Web环境跳过token获取
+      // Web环境不需要token（使用后端代理
       return null;
     }
 
@@ -106,8 +110,8 @@ class FoodRecognitionService {
   Future<FoodRecognitionResponse> recognizeFoodFromBytes(
       List<int> imageBytes) async {
     if (kIsWeb) {
-      // Web环境使用模拟识别
-      return _getMockRecognitionResult();
+      // Web环境使用后端代理API
+      return await _recognizeWithBackend(imageBytes);
     }
 
     // 原生环境继续使用百度API
@@ -138,6 +142,34 @@ class FoodRecognitionService {
       }
     } catch (e) {
       debugPrint('Food recognition failed: $e');
+      return _getMockRecognitionResult();
+    }
+  }
+
+  Future<FoodRecognitionResponse> _recognizeWithBackend(List<int> imageBytes) async {
+    // 调用后端代理API进行识别
+    try {
+      final imageBase64 = base64Encode(imageBytes);
+      
+      final response = await http.post(
+        Uri.parse(_backendUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'image': imageBase64,
+          'top_num': 5,
+          'filter_threshold': 0.8,
+        }),
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return FoodRecognitionResponse.fromJson(data);
+      } else {
+        debugPrint('Backend API failed, using mock: ${response.statusCode}');
+        return _getMockRecognitionResult();
+      }
+    } catch (e) {
+      debugPrint('Backend recognition failed: $e');
       return _getMockRecognitionResult();
     }
   }
