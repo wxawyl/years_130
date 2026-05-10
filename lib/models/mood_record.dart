@@ -6,6 +6,9 @@ class MoodRecord {
   String? createdAt;
   int? stressLevel;
   String? gratitude;
+  int hasAnxiety;
+  int hasOverthinking;
+  int hasLowMood;
 
   MoodRecord({
     this.id,
@@ -15,6 +18,9 @@ class MoodRecord {
     this.createdAt,
     this.stressLevel,
     this.gratitude,
+    this.hasAnxiety = 0,
+    this.hasOverthinking = 0,
+    this.hasLowMood = 0,
   });
 
   int get moodScore => moodLevel;
@@ -28,6 +34,9 @@ class MoodRecord {
       'created_at': createdAt,
       'stress_level': stressLevel,
       'gratitude': gratitude,
+      'has_anxiety': hasAnxiety,
+      'has_overthinking': hasOverthinking,
+      'has_low_mood': hasLowMood,
     };
   }
 
@@ -40,6 +49,9 @@ class MoodRecord {
       createdAt: map['created_at'] as String?,
       stressLevel: map['stress_level'] as int?,
       gratitude: map['gratitude'] as String?,
+      hasAnxiety: (map['has_anxiety'] as int?) ?? 0,
+      hasOverthinking: (map['has_overthinking'] as int?) ?? 0,
+      hasLowMood: (map['has_low_mood'] as int?) ?? 0,
     );
   }
 

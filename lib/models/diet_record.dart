@@ -8,6 +8,12 @@ class DietRecord {
   double carbs;
   double fat;
   double servings;
+  int isRegular;
+  int hasFried;
+  int hasSweet;
+  int hasSnack;
+  int waterLevel;
+  int alcoholLevel;
   String? createdAt;
   String? foodImagePath;
   double? recognitionConfidence;
@@ -22,6 +28,12 @@ class DietRecord {
     required this.carbs,
     required this.fat,
     required this.servings,
+    this.isRegular = 1,
+    this.hasFried = 0,
+    this.hasSweet = 0,
+    this.hasSnack = 0,
+    this.waterLevel = 2,
+    this.alcoholLevel = 0,
     this.createdAt,
     this.foodImagePath,
     this.recognitionConfidence,
@@ -38,6 +50,12 @@ class DietRecord {
       'carbs': carbs,
       'fat': fat,
       'servings': servings,
+      'is_regular': isRegular,
+      'has_fried': hasFried,
+      'has_sweet': hasSweet,
+      'has_snack': hasSnack,
+      'water_level': waterLevel,
+      'alcohol_level': alcoholLevel,
       'created_at': createdAt,
       'food_image': foodImagePath,
       'recognition_confidence': recognitionConfidence,
@@ -55,6 +73,12 @@ class DietRecord {
       carbs: map['carbs'] as double,
       fat: map['fat'] as double,
       servings: map['servings'] as double,
+      isRegular: (map['is_regular'] as int?) ?? 1,
+      hasFried: (map['has_fried'] as int?) ?? 0,
+      hasSweet: (map['has_sweet'] as int?) ?? 0,
+      hasSnack: (map['has_snack'] as int?) ?? 0,
+      waterLevel: (map['water_level'] as int?) ?? 2,
+      alcoholLevel: (map['alcohol_level'] as int?) ?? 0,
       createdAt: map['created_at'] as String?,
       foodImagePath: map['food_image'] as String?,
       recognitionConfidence: map['recognition_confidence'] as double?,

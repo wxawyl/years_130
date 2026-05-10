@@ -6,6 +6,8 @@ class SleepRecord {
   double? duration;
   int? quality;
   double? deepSleepRatio;
+  int awakenCount;
+  int sleepQualityScore;
   String? notes;
   String? createdAt;
 
@@ -17,6 +19,8 @@ class SleepRecord {
     this.duration,
     this.quality,
     this.deepSleepRatio,
+    this.awakenCount = 0,
+    this.sleepQualityScore = 5,
     this.notes,
     this.createdAt,
   });
@@ -30,6 +34,8 @@ class SleepRecord {
       'duration': duration,
       'quality': quality,
       'deep_sleep_ratio': deepSleepRatio,
+      'awaken_count': awakenCount,
+      'sleep_quality_score': sleepQualityScore,
       'notes': notes,
       'created_at': createdAt,
     };
@@ -44,6 +50,8 @@ class SleepRecord {
       duration: map['duration'] as double?,
       quality: map['quality'] as int?,
       deepSleepRatio: map['deep_sleep_ratio'] as double?,
+      awakenCount: (map['awaken_count'] as int?) ?? 0,
+      sleepQualityScore: (map['sleep_quality_score'] as int?) ?? 5,
       notes: map['notes'] as String?,
       createdAt: map['created_at'] as String?,
     );

@@ -8,6 +8,7 @@ import '../models/mood_record.dart';
 import '../models/daily_score.dart';
 import '../models/knowledge_item.dart';
 import '../models/reminder.dart';
+import '../models/ai_health_report.dart';
 
 class DatabaseService {
   static Database? _database;
@@ -23,7 +24,7 @@ class DatabaseService {
     final path = join(documentsDirectory.path, 'health_life.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDatabase,
       onUpgrade: _onUpgradeDatabase,
     );
@@ -40,6 +41,97 @@ class DatabaseService {
         ADD COLUMN recognition_confidence REAL
       ''');
     }
+    if (oldVersion < 3) {
+      // Upgrade sleep_records table
+      await db.execute('''
+        ALTER TABLE sleep_records
+        ADD COLUMN awaken_count INTEGER DEFAULT 0
+      ''');
+      await db.execute('''
+        ALTER TABLE sleep_records
+        ADD COLUMN sleep_quality_score INTEGER DEFAULT 5
+      ''');
+      
+      // Upgrade diet_records table
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN is_regular INTEGER DEFAULT 1
+      ''');
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN has_fried INTEGER DEFAULT 0
+      ''');
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN has_sweet INTEGER DEFAULT 0
+      ''');
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN has_snack INTEGER DEFAULT 0
+      ''');
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN water_level INTEGER DEFAULT 2
+      ''');
+      await db.execute('''
+        ALTER TABLE diet_records
+        ADD COLUMN alcohol_level INTEGER DEFAULT 0
+      ''');
+      
+      // Upgrade exercise_records table
+      await db.execute('''
+        ALTER TABLE exercise_records
+        ADD COLUMN has_intentional_exercise INTEGER DEFAULT 0
+      ''');
+      await db.execute('''
+        ALTER TABLE exercise_records
+        ADD COLUMN sedentary_level INTEGER DEFAULT 2
+      ''');
+      
+      // Upgrade mood_records table
+      await db.execute('''
+        ALTER TABLE mood_records
+        ADD COLUMN has_anxiety INTEGER DEFAULT 0
+      ''');
+      await db.execute('''
+        ALTER TABLE mood_records
+        ADD COLUMN has_overthinking INTEGER DEFAULT 0
+      ''');
+      await db.execute('''
+        ALTER TABLE mood_records
+        ADD COLUMN has_low_mood INTEGER DEFAULT 0
+      ''');
+      
+      // Upgrade user_settings table
+      await db.execute('''
+        ALTER TABLE user_settings
+        ADD COLUMN health_issues TEXT
+      ''');
+      await db.execute('''
+        ALTER TABLE user_settings
+        ADD COLUMN health_goal TEXT
+      ''');
+      
+      // Create AI reports table
+      await db.execute('''
+        CREATE TABLE ai_reports (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          total_score REAL,
+          sleep_score REAL,
+          diet_score REAL,
+          exercise_score REAL,
+          mood_score REAL,
+          health_issues TEXT,
+          sleep_suggestion TEXT,
+          diet_suggestion TEXT,
+          exercise_suggestion TEXT,
+          mood_suggestion TEXT,
+          weekly_trend TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+    }
   }
 
   Future<void> _createDatabase(Database db, int version) async {
@@ -53,6 +145,8 @@ class DatabaseService {
         weight REAL,
         target_sleep_hours REAL DEFAULT 8,
         target_calories INTEGER DEFAULT 2000,
+        health_issues TEXT,
+        health_goal TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
@@ -67,6 +161,8 @@ class DatabaseService {
         duration REAL,
         quality INTEGER,
         deep_sleep_ratio REAL,
+        awaken_count INTEGER DEFAULT 0,
+        sleep_quality_score INTEGER DEFAULT 5,
         notes TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
@@ -83,6 +179,14 @@ class DatabaseService {
         carbs REAL,
         fat REAL,
         servings REAL,
+        is_regular INTEGER DEFAULT 1,
+        has_fried INTEGER DEFAULT 0,
+        has_sweet INTEGER DEFAULT 0,
+        has_snack INTEGER DEFAULT 0,
+        water_level INTEGER DEFAULT 2,
+        alcohol_level INTEGER DEFAULT 0,
+        food_image TEXT,
+        recognition_confidence REAL,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -97,6 +201,8 @@ class DatabaseService {
         intensity INTEGER,
         calories_burned REAL,
         steps INTEGER,
+        has_intentional_exercise INTEGER DEFAULT 0,
+        sedentary_level INTEGER DEFAULT 2,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -109,6 +215,9 @@ class DatabaseService {
         stress_level INTEGER,
         diary TEXT,
         gratitude TEXT,
+        has_anxiety INTEGER DEFAULT 0,
+        has_overthinking INTEGER DEFAULT 0,
+        has_low_mood INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -123,6 +232,25 @@ class DatabaseService {
         mood_score REAL,
         total_score REAL,
         suggestions TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE ai_reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        total_score REAL,
+        sleep_score REAL,
+        diet_score REAL,
+        exercise_score REAL,
+        mood_score REAL,
+        health_issues TEXT,
+        sleep_suggestion TEXT,
+        diet_suggestion TEXT,
+        exercise_suggestion TEXT,
+        mood_suggestion TEXT,
+        weekly_trend TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -255,6 +383,21 @@ class DatabaseService {
     return List.generate(maps.length, (i) => SleepRecord.fromMap(maps[i]));
   }
 
+  Future<List<SleepRecord>> getSleepRecordsForDays(int days) async {
+    final db = await database;
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days - 1));
+    final startDateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      'sleep_records',
+      where: 'date >= ?',
+      whereArgs: [startDateStr],
+      orderBy: 'date DESC',
+    );
+    return List.generate(maps.length, (i) => SleepRecord.fromMap(maps[i]));
+  }
+
   Future<int> updateSleepRecord(SleepRecord record) async {
     final db = await database;
     return await db.update(
@@ -285,6 +428,21 @@ class DatabaseService {
       'diet_records',
       where: 'date = ?',
       whereArgs: [date],
+    );
+    return List.generate(maps.length, (i) => DietRecord.fromMap(maps[i]));
+  }
+
+  Future<List<DietRecord>> getDietRecordsForDays(int days) async {
+    final db = await database;
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days - 1));
+    final startDateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      'diet_records',
+      where: 'date >= ?',
+      whereArgs: [startDateStr],
+      orderBy: 'date DESC',
     );
     return List.generate(maps.length, (i) => DietRecord.fromMap(maps[i]));
   }
@@ -323,6 +481,21 @@ class DatabaseService {
     return List.generate(maps.length, (i) => ExerciseRecord.fromMap(maps[i]));
   }
 
+  Future<List<ExerciseRecord>> getExerciseRecordsForDays(int days) async {
+    final db = await database;
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days - 1));
+    final startDateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      'exercise_records',
+      where: 'date >= ?',
+      whereArgs: [startDateStr],
+      orderBy: 'date DESC',
+    );
+    return List.generate(maps.length, (i) => ExerciseRecord.fromMap(maps[i]));
+  }
+
   Future<int> updateExerciseRecord(ExerciseRecord record) async {
     final db = await database;
     return await db.update(
@@ -353,6 +526,21 @@ class DatabaseService {
       'mood_records',
       where: 'date = ?',
       whereArgs: [date],
+    );
+    return List.generate(maps.length, (i) => MoodRecord.fromMap(maps[i]));
+  }
+
+  Future<List<MoodRecord>> getMoodRecordsForDays(int days) async {
+    final db = await database;
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days - 1));
+    final startDateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      'mood_records',
+      where: 'date >= ?',
+      whereArgs: [startDateStr],
+      orderBy: 'date DESC',
     );
     return List.generate(maps.length, (i) => MoodRecord.fromMap(maps[i]));
   }
@@ -403,6 +591,53 @@ class DatabaseService {
     );
     if (maps.isEmpty) return null;
     return DailyScore.fromMap(maps.first);
+  }
+
+  Future<List<DailyScore>> getDailyScoresForDays(int days) async {
+    final db = await database;
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days - 1));
+    final startDateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      'daily_scores',
+      where: 'date >= ?',
+      whereArgs: [startDateStr],
+      orderBy: 'date DESC',
+    );
+    return List.generate(maps.length, (i) => DailyScore.fromMap(maps[i]));
+  }
+
+  Future<int> insertAIReport(AIHealthReport report) async {
+    final db = await database;
+    return await db.insert('ai_reports', report.toMap());
+  }
+
+  Future<AIHealthReport?> getAIReport(String date) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'ai_reports',
+      where: 'date = ?',
+      whereArgs: [date],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return AIHealthReport.fromMap(maps.first);
+  }
+
+  Future<List<AIHealthReport>> getAIReportsForDays(int days) async {
+    final db = await database;
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days - 1));
+    final startDateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      'ai_reports',
+      where: 'date >= ?',
+      whereArgs: [startDateStr],
+      orderBy: 'date DESC',
+    );
+    return List.generate(maps.length, (i) => AIHealthReport.fromMap(maps[i]));
   }
 
   Future<List<KnowledgeItem>> getKnowledgeByCategory(int category) async {

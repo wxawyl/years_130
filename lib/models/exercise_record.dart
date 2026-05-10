@@ -7,6 +7,8 @@ class ExerciseRecord {
   int intensity;
   double caloriesBurned;
   int? steps;
+  int hasIntentionalExercise;
+  int sedentaryLevel;
   String? createdAt;
 
   ExerciseRecord({
@@ -18,6 +20,8 @@ class ExerciseRecord {
     required this.intensity,
     required this.caloriesBurned,
     this.steps,
+    this.hasIntentionalExercise = 0,
+    this.sedentaryLevel = 2,
     this.createdAt,
   });
 
@@ -33,6 +37,8 @@ class ExerciseRecord {
       'intensity': intensity,
       'calories_burned': caloriesBurned,
       'steps': steps,
+      'has_intentional_exercise': hasIntentionalExercise,
+      'sedentary_level': sedentaryLevel,
       'created_at': createdAt,
     };
   }
@@ -47,6 +53,8 @@ class ExerciseRecord {
       intensity: map['intensity'] as int,
       caloriesBurned: map['calories_burned'] as double,
       steps: map['steps'] as int?,
+      hasIntentionalExercise: (map['has_intentional_exercise'] as int?) ?? 0,
+      sedentaryLevel: (map['sedentary_level'] as int?) ?? 2,
       createdAt: map['created_at'] as String?,
     );
   }
