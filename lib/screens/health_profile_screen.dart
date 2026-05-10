@@ -235,7 +235,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
 
   Widget _buildGenderDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedGender,
+      initialValue: _selectedGender,
       decoration: InputDecoration(
         labelText: '性别',
         prefixIcon: const Icon(Icons.person),
@@ -260,7 +260,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
 
   Widget _buildGoalDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedHealthGoal,
+      initialValue: _selectedHealthGoal,
       decoration: InputDecoration(
         labelText: '我的健康目标',
         prefixIcon: const Icon(Icons.flag),
