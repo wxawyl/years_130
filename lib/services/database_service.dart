@@ -9,6 +9,7 @@ import '../models/daily_score.dart';
 import '../models/knowledge_item.dart';
 import '../models/reminder.dart';
 import '../models/ai_health_report.dart';
+import '../models/user_settings.dart';
 
 class DatabaseService {
   static Database? _database;
@@ -696,5 +697,47 @@ class DatabaseService {
     );
     if (maps.isEmpty) return null;
     return maps.first['completed'] as int;
+  }
+
+  Future<int> insertUserSettings(UserSettings settings) async {
+    final db = await database;
+    final now = DateTime.now().toIso8601String();
+    settings.createdAt = now;
+    settings.updatedAt = now;
+    return await db.insert('user_settings', settings.toMap());
+  }
+
+  Future<UserSettings?> getUserSettings() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'user_settings',
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return UserSettings.fromMap(maps.first);
+  }
+
+  Future<int> updateUserSettings(UserSettings settings) async {
+    final db = await database;
+    settings.updatedAt = DateTime.now().toIso8601String();
+    if (settings.id != null) {
+      return await db.update(
+        'user_settings',
+        settings.toMap(),
+        where: 'id = ?',
+        whereArgs: [settings.id],
+      );
+    } else {
+      return await insertUserSettings(settings);
+    }
+  }
+
+  Future<int> deleteUserSettings(int id) async {
+    final db = await database;
+    return await db.delete(
+      'user_settings',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }
