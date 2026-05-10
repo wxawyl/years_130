@@ -19,6 +19,8 @@ class _SleepScreenState extends State<SleepScreen> {
   List<SleepRecord> _todayRecords = [];
   List<KnowledgeItem> _knowledgeItems = [];
   int _sleepQuality = 3;
+  int _awakenCount = 0;
+  int _sleepQualityScore = 7;
   TimeOfDay _bedtime = const TimeOfDay(hour: 23, minute: 0);
   TimeOfDay _wakeTime = const TimeOfDay(hour: 7, minute: 0);
 
@@ -78,6 +80,8 @@ class _SleepScreenState extends State<SleepScreen> {
       wakeTime: wakeTimeStr,
       duration: duration,
       quality: _sleepQuality,
+      awakenCount: _awakenCount,
+      sleepQualityScore: _sleepQualityScore,
     );
 
     await _dbService.insertSleepRecord(record);
@@ -257,6 +261,82 @@ class _SleepScreenState extends State<SleepScreen> {
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF66BB6A),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('夜间醒来次数', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(6, (index) {
+                        int count = index;
+                        return GestureDetector(
+                          onTap: () => setState(() => _awakenCount = count),
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _awakenCount == count
+                                  ? const Color(0xFF66BB6A)
+                                  : Colors.grey[200],
+                            ),
+                            child: Center(
+                              child: Text(
+                                count.toString(),
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: _awakenCount == count ? Colors.white : Colors.grey[700],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('睡眠质量评分 (1-10)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(10, (index) {
+                        int score = index + 1;
+                        return GestureDetector(
+                          onTap: () => setState(() => _sleepQualityScore = score),
+                          child: Container(
+                            width: 30,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: _sleepQualityScore >= score
+                                  ? const Color(0xFF66BB6A)
+                                  : Colors.grey[200],
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Center(
+                              child: Text(
+                                score.toString(),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: _sleepQualityScore >= score ? Colors.white : Colors.grey[700],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
                   ],
                 ),

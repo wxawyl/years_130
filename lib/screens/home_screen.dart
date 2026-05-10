@@ -12,6 +12,8 @@ import 'sleep_screen.dart';
 import 'diet_screen.dart';
 import 'exercise_screen.dart';
 import 'mood_screen.dart';
+import 'health_profile_screen.dart';
+import 'ai_health_report_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -85,6 +87,13 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(l10n.appTitle),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const HealthProfileScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.language),
             onPressed: () => _showLanguageSelector(context),
@@ -219,6 +228,54 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 );
               },
+            ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AIHealthReportScreen()),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE8F5E9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.auto_awesome, color: Color(0xFF2E7D32), size: 30),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'AI 健康报告',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2E7D32),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '智能分析你的健康数据',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Text(
