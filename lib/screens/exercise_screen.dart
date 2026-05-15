@@ -330,7 +330,34 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.exerciseManagement),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.exerciseManagement),
+            const SizedBox(width: 8),
+            if (_isSyncing)
+              const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              InkWell(
+                onTap: _syncWithHealthKit,
+                child: const Tooltip(
+                  message: '同步 HealthKit 数据',
+                  child: Text(
+                    'HealthKit',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
         centerTitle: true,
       ),
       body: _isLoading
@@ -340,43 +367,12 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${l10n.exerciseType}（总消耗: ${_totalCalories.toStringAsFixed(0)} kcal）',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _isSyncing
-                          ? Container(
-                              width: 20,
-                              height: 20,
-                              child: const CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Tooltip(
-                              message: '同步 Apple HealthKit 数据',
-                              child: InkWell(
-                                onTap: _syncWithHealthKit,
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.sync,
-                                    size: 20,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ),
-                            ),
-                    ],
+                  Text(
+                    '${l10n.exerciseType}（总消耗: ${_totalCalories.toStringAsFixed(0)} kcal）',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   GridView.count(
