@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import '../models/sleep_record.dart';
 import '../models/exercise_record.dart';
 import '../models/diet_record.dart';
-import '../models/mood_record.dart';
 
 class HealthAnalysisService {
   static Future<SleepAnalysisResult> analyzeSleep(List<SleepRecord> records) async {
@@ -189,61 +188,6 @@ class HealthAnalysisService {
     );
   }
 
-  static Future<MoodAnalysisResult> analyzeMood(List<MoodRecord> records) async {
-    if (records.isEmpty) {
-      return MoodAnalysisResult(
-        avgMood: 0,
-        stability: 0,
-        positiveDays: 0,
-        recommendations: ['暂无心态数据'],
-        totalRecords: 0,
-      );
-    }
-
-    int totalMood = 0;
-    int sumSquaredDiff = 0;
-    int positiveCount = 0;
-    Set<String> dates = {};
-    
-    for (var record in records) {
-      totalMood += record.moodLevel;
-      if (record.moodLevel >= 4) positiveCount++;
-      dates.add(record.date);
-    }
-
-    double avgMood = totalMood / records.length;
-    
-    for (var record in records) {
-      sumSquaredDiff += ((record.moodLevel - avgMood) * (record.moodLevel - avgMood)).round();
-    }
-    double variance = sumSquaredDiff / records.length;
-    double stdDev = sqrt(variance);
-    int stability = ((1 - stdDev / 2) * 100).clamp(0, 100).round();
-
-    List<String> recommendations = [];
-    
-    if (avgMood < 3) {
-      recommendations.add('近期情绪较低落，建议多进行户外活动和社交');
-    }
-    if (avgMood >= 4) {
-      recommendations.add('情绪状态良好，继续保持积极心态！');
-    }
-    if (stability < 60) {
-      recommendations.add('情绪波动较大，建议学习情绪管理技巧');
-    }
-    if (recommendations.isEmpty) {
-      recommendations.add('您的心态状况良好，请继续保持！');
-    }
-
-    return MoodAnalysisResult(
-      avgMood: avgMood,
-      stability: stability,
-      positiveDays: positiveCount,
-      recommendations: recommendations,
-      totalRecords: records.length,
-    );
-  }
-
   static String _getExerciseTypeName(int type) {
     switch (type) {
       case 1: return '步行';
@@ -321,23 +265,7 @@ class DietAnalysisResult {
     required this.totalRecords,
     required this.mealDistribution,
   });
-}
-
-class MoodAnalysisResult {
-  final double avgMood;
-  final int stability;
-  final int positiveDays;
-  final List<String> recommendations;
-  final int totalRecords;
-
-  MoodAnalysisResult({
-    required this.avgMood,
-    required this.stability,
-    required this.positiveDays,
-    required this.recommendations,
-    required this.totalRecords,
-  });
-}
+  }
 
 enum TimeRange {
   week,

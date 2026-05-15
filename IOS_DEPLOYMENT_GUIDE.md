@@ -1,100 +1,134 @@
-# iOS版本部署指南
+# iOS HealthKit 部署指南
 
-## 概述
-由于你在Windows环境下开发，且不想支付99美元的Apple开发者费用，我们将使用以下方案：
+本指南说明如何将应用部署到 iOS 设备并配置 HealthKit 功能。
 
-1. **使用云编译服务**生成iOS应用（.ipa文件）
-2. **使用AltStore**免费签名并安装到iPhone
+## 📋 已完成的配置
 
----
+### 1. Info.plist 配置
+已在 `ios/Runner/Info.plist` 中添加了 HealthKit 权限：
+- `NSHealthShareUsageDescription` - 共享健康数据权限描述
+- `NSHealthUpdateUsageDescription` - 更新健康数据权限描述
 
-## 方案一：使用GitHub Actions + 云编译（推荐）
+### 2. Entitlements 文件
+创建了 `ios/Runner/Runner.entitlements` 文件，启用了：
+- `com.apple.developer.healthkit` - HealthKit 功能
+- `com.apple.developer.healthkit.access` - HealthKit 访问权限
 
-### 第一步：准备GitHub仓库
+### 3. Xcode 项目配置
+在 `ios/Runner.xcodeproj/project.pbxproj` 的所有 build configuration 中：
+- Debug: 添加了 `CODE_SIGN_ENTITLEMENTS` 配置
+- Release: 添加了 `CODE_SIGN_ENTITLEMENTS` 配置
+- Profile: 添加了 `CODE_SIGN_ENTITLEMENTS` 配置
 
-1. 在GitHub上创建一个新仓库
-2. 将本地代码推送到GitHub
+## 🚀 部署到 iOS 设备的步骤
+
+### 第一步：在 Apple Developer 中配置
+
+1. 访问 [Apple Developer Portal](https://developer.apple.com/account/)
+2. 登录您的 Apple ID
+3. 进入 "Certificates, Identifiers & Profiles"
+4. 在 "Identifiers" 中找到您的应用 bundle ID（com.example.liveTo130）
+5. 编辑该 identifier，确保勾选了 "HealthKit" capability
+
+### 第二步：连接 iOS 设备
+
+1. 使用 USB 线连接您的 iPhone 到电脑
+2. 在 iPhone 上 "设置" -> "通用" -> "设备管理" 中信任您的开发者证书
+3. 在 Xcode 中打开项目：
+   ```bash
+   open ios/Runner.xcworkspace
+   ```
+
+### 第三步：部署到设备
+
+#### 方法一：使用 Flutter CLI（推荐）
 
 ```bash
-# 在项目目录执行
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/你的用户名/仓库名.git
-git branch -M main
-git push -u origin main
+# 1. 确保 iOS 设备：
+flutter devices
+
+# 2. 运行到设备：
+flutter run -d <device_id>
 ```
 
-### 第二步：设置GitHub Actions工作流
+#### 方法二：使用 Xcode
 
-在项目中创建 `.github/workflows/ios-build.yml` 文件（我稍后会帮你创建）
+1. 打开 `ios/Runner.xcworkspace`
+2. 在顶部工具栏选择您的 iOS 设备
+3. 点击 "Run" 按钮（或按 Cmd+R
+4. 首次运行时会在设备上安装应用
 
-### 第三步：获取编译好的.ipa文件
+### 第四步：授权 HealthKit 访问
 
-GitHub Actions会自动编译并生成.ipa文件，你可以从Actions页面下载
+应用首次运行时：
+1. 进入睡眠或运动页面
+2. 点击同步按钮
+3. 系统会弹出 HealthKit 权限请求
+4. 点击 "允许" 授权访问睡眠和运动数据
 
----
+## 📱 功能说明
 
-## 方案二：使用MacInCloud或其他云Mac服务
+### 睡眠管理
+- 自动从 Apple HealthKit 读取睡眠数据
+- 显示入睡时间、起床时间、睡眠时长
+- 根据睡眠质量自动评分
+- 支持用户可编辑同步的数据
+- 基于睡眠状态的智能建议
 
-如果GitHub Actions无法满足需求，可以使用付费的云Mac服务：
-- MacInCloud
-- MacStadium
-- AWS EC2 Mac实例
+### 运动管理
+- 自动从 Apple HealthKit 读取运动数据
+- 同步步数、距离、卡路里消耗
+- 支持手动记录作为备选
+- 显示运动历史记录
 
----
+## ⚠️ 注意事项
 
-## AltStore安装和使用指南
+1. **HealthKit 仅限 iOS 设备可用
+   - 在 Web 平台无法使用 HealthKit
+   - 只能在真实的 iOS 设备或 iOS 模拟器上测试
 
-### 1. 安装AltServer（电脑端）
+2. **真机 vs 模拟器
+   - 真机可以访问真实的健康数据
+   - 模拟器只有模拟数据用于测试
 
-**Windows用户：**
-1. 下载AltServer：https://altstore.io
-2. 安装iTunes（必须）
-3. 安装iCloud（必须）
-4. 运行AltServer
-5. 在系统托盘找到AltServer图标
+3. **App Store 发布
+   - 如果计划发布到 App Store：
+     - 需要完整的权限说明
+     - 隐私政策
+     - 确保只在真正需要时才请求权限
 
-**Mac用户：**
-1. 下载AltServer：https://altstore.io
-2. 安装并运行AltServer
-3. 在菜单栏找到AltServer图标
+4. **数据隐私
+   - HealthKit 数据高度隐私敏感
+   - 确保遵守 Apple 的隐私政策要求
+   - 只在需要时才请求权限
 
-### 2. 安装AltStore（手机端）
+## 🛠️ 故障排除
 
-1. 用数据线将iPhone连接到电脑
-2. 在电脑上的AltServer中选择你的iPhone
-3. 输入Apple ID和密码（用于签名）
-4. AltStore会自动安装到你的iPhone
+### 问题：HealthKit 权限未显示
+- 检查 Apple Developer 中的 identifier 配置
+- 确认 entitlements 文件被正确链接
+- 重新构建项目：`flutter clean && flutter pub get && flutter run`
 
-### 3. 信任开发者
+### 问题：无法读取数据
+- 确认用户是否已授权
+- 检查 HealthKit 中是否有数据
+- 尝试重新授权：在 iPhone 设置中找到应用，检查权限设置
 
-在iPhone上：
-- 打开 设置 → 通用 → VPN与设备管理
-- 找到你的Apple ID
-- 点击 "信任"
+### 问题：应用无法安装到设备
+- 确保设备信任开发者证书
+- 检查 bundle ID 和签名
+- 更新 provisioning profile
+- 在 Xcode 中选择正确的 team
 
-### 4. 安装.ipa文件
+## 📚 相关资源
 
-1. 将编译好的.ipa文件传输到iPhone
-2. 在AltStore中点击 "My Apps" 标签
-3. 点击 "+" 按钮
-4. 选择.ipa文件进行安装
+- [Apple HealthKit 文档](https://developer.apple.com/documentation/healthkit)
+- [Flutter health 包文档](https://pub.dev/packages/health)
+- [Flutter iOS 部署指南](https://docs.flutter.dev/deployment/ios)
 
----
+## 🎉 下一步
 
-## 重要提示
-
-1. **免费签名有效期为7天**，7天后需要重新签名
-2. AltStore会在同一WiFi下自动重新签名
-3. 建议保持AltServer在电脑上运行
-
----
-
-## 下一步
-
-我现在帮你：
-1. 创建GitHub Actions工作流文件
-2. 初始化Git仓库
-3. 准备推送到GitHub
-
-准备好了吗？
+1. 配置好 Apple Developer 账户后
+2. 连接 iOS 设备
+3. 运行 `flutter run`
+4. 测试 HealthKit 同步功能！

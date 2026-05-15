@@ -8,6 +8,10 @@ class SleepRecord {
   double? deepSleepRatio;
   String? notes;
   String? createdAt;
+  String? healthKitId;
+  bool? isSynced;
+  String? syncTime;
+  String? source;
 
   SleepRecord({
     this.id,
@@ -19,6 +23,10 @@ class SleepRecord {
     this.deepSleepRatio,
     this.notes,
     this.createdAt,
+    this.healthKitId,
+    this.isSynced,
+    this.syncTime,
+    this.source,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +40,10 @@ class SleepRecord {
       'deep_sleep_ratio': deepSleepRatio,
       'notes': notes,
       'created_at': createdAt,
+      'health_kit_id': healthKitId,
+      'is_synced': isSynced,
+      'sync_time': syncTime,
+      'source': source,
     };
   }
 
@@ -46,6 +58,10 @@ class SleepRecord {
       deepSleepRatio: map['deep_sleep_ratio'] as double?,
       notes: map['notes'] as String?,
       createdAt: map['created_at'] as String?,
+      healthKitId: map['health_kit_id'] as String?,
+      isSynced: map['is_synced'] as bool?,
+      syncTime: map['sync_time'] as String?,
+      source: map['source'] as String?,
     );
   }
 }

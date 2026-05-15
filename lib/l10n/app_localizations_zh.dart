@@ -580,8 +580,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get musicDeleted => 'Music deleted';
 
   @override
-  String get deleteRecordConfirm =>
-      'Are you sure you want to delete this record?';
+  String get deleteRecordConfirm => '确定要删除这条睡眠记录吗？';
 
   @override
   String get timeRange => 'Time Range';

@@ -8,6 +8,10 @@ class ExerciseRecord {
   double caloriesBurned;
   int? steps;
   String? createdAt;
+  String? healthKitId;
+  bool? isSynced;
+  String? syncTime;
+  String? source;
 
   ExerciseRecord({
     this.id,
@@ -19,6 +23,10 @@ class ExerciseRecord {
     required this.caloriesBurned,
     this.steps,
     this.createdAt,
+    this.healthKitId,
+    this.isSynced,
+    this.syncTime,
+    this.source,
   });
 
   int get type => exerciseType;
@@ -34,6 +42,10 @@ class ExerciseRecord {
       'calories_burned': caloriesBurned,
       'steps': steps,
       'created_at': createdAt,
+      'health_kit_id': healthKitId,
+      'is_synced': isSynced,
+      'sync_time': syncTime,
+      'source': source,
     };
   }
 
@@ -48,6 +60,10 @@ class ExerciseRecord {
       caloriesBurned: map['calories_burned'] as double,
       steps: map['steps'] as int?,
       createdAt: map['created_at'] as String?,
+      healthKitId: map['health_kit_id'] as String?,
+      isSynced: map['is_synced'] as bool?,
+      syncTime: map['sync_time'] as String?,
+      source: map['source'] as String?,
     );
   }
 

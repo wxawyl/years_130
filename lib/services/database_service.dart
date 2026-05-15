@@ -3,24 +3,26 @@ import 'package:intl/intl.dart';
 import '../models/sleep_record.dart';
 import '../models/diet_record.dart';
 import '../models/exercise_record.dart';
-import '../models/mood_record.dart';
+import '../models/voice_diary_record.dart';
 import '../models/daily_score.dart';
 import '../models/knowledge_item.dart';
 import '../models/reminder.dart';
 import '../models/meditation_music.dart';
+import '../models/user_profile.dart';
 
 class MemoryDatabase {
   static MemoryDatabase? _instance;
   List<Map<String, dynamic>> _sleepRecords = [];
   List<Map<String, dynamic>> _dietRecords = [];
   List<Map<String, dynamic>> _exerciseRecords = [];
-  List<Map<String, dynamic>> _moodRecords = [];
+  List<Map<String, dynamic>> _voiceDiaries = [];
   List<Map<String, dynamic>> _dailyScores = [];
   List<Map<String, dynamic>> _knowledgeBase = [];
   List<Map<String, dynamic>> _reminders = [];
   List<Map<String, dynamic>> _habitTracking = [];
   List<Map<String, dynamic>> _sharePosts = [];
   List<Map<String, dynamic>> _customMusic = [];
+  Map<String, dynamic>? _userProfile;
   int _nextId = 1;
   bool _isInitialized = false;
 
@@ -75,8 +77,8 @@ class MemoryDatabase {
       case 'exercise_records':
         _exerciseRecords.add(data);
         break;
-      case 'mood_records':
-        _moodRecords.add(data);
+      case 'voice_diaries':
+        _voiceDiaries.add(data);
         break;
       case 'daily_scores':
         _dailyScores.add(data);
@@ -94,6 +96,21 @@ class MemoryDatabase {
     return data['id'];
   }
 
+  Future<void> saveUserProfile(Map<String, dynamic> data) async {
+    await _initializeIfNeeded();
+    if (_userProfile == null) {
+      data['id'] = 1;
+      data['created_at'] = DateTime.now().toIso8601String();
+    }
+    data['updated_at'] = DateTime.now().toIso8601String();
+    _userProfile = {...?_userProfile, ...data};
+  }
+
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    await _initializeIfNeeded();
+    return _userProfile;
+  }
+
   Future<List<Map<String, dynamic>>> query(String table, {String? where, List<dynamic>? whereArgs, int? limit}) async {
     await _initializeIfNeeded();
     List<Map<String, dynamic>> records;
@@ -108,8 +125,8 @@ class MemoryDatabase {
       case 'exercise_records':
         records = List.from(_exerciseRecords);
         break;
-      case 'mood_records':
-        records = List.from(_moodRecords);
+      case 'voice_diaries':
+        records = List.from(_voiceDiaries);
         break;
       case 'daily_scores':
         records = List.from(_dailyScores);
@@ -139,7 +156,7 @@ class MemoryDatabase {
           return record['date'] == whereArgs[0];
         }
         if (where.contains('date >= ?')) {
-          return record['date'] != null && record['date'] >= whereArgs[0];
+          return record['date'] != null && record['date'].compareTo(whereArgs[0]) >= 0;
         }
         if (where.contains('category = ?')) {
           return record['category'] == whereArgs[0];
@@ -176,8 +193,8 @@ class MemoryDatabase {
       case 'exercise_records':
         updated = _updateRecord(_exerciseRecords, data, id);
         break;
-      case 'mood_records':
-        updated = _updateRecord(_moodRecords, data, id);
+      case 'voice_diaries':
+        updated = _updateRecord(_voiceDiaries, data, id);
         break;
       case 'reminders':
         updated = _updateRecord(_reminders, data, id);
@@ -224,8 +241,8 @@ class MemoryDatabase {
       case 'exercise_records':
         deleted = _deleteRecord(_exerciseRecords, id);
         break;
-      case 'mood_records':
-        deleted = _deleteRecord(_moodRecords, id);
+      case 'voice_diaries':
+        deleted = _deleteRecord(_voiceDiaries, id);
         break;
       case 'custom_music':
         deleted = _deleteRecord(_customMusic, id);
@@ -282,12 +299,6 @@ class DatabaseService {
       'duration': 30,
       'intensity': 4,
       'calories_burned': 200,
-    });
-
-    await db.insert('mood_records', {
-      'date': today,
-      'mood_score': 4,
-      'diary': '感觉很好',
     });
   }
 
@@ -423,60 +434,60 @@ class DatabaseService {
     return List.generate(maps.length, (i) => ExerciseRecord.fromMap(maps[i]));
   }
 
-  Future<int> insertMoodRecord(MoodRecord record) async {
+  Future<int> insertVoiceDiary(VoiceDiaryRecord record) async {
     final db = await database;
-    return await db.insert('mood_records', record.toMap());
+    return await db.insert('voice_diaries', record.toMap());
   }
 
-  Future<List<MoodRecord>> getMoodRecords(String date) async {
+  Future<List<VoiceDiaryRecord>> getVoiceDiaries(String date) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'mood_records',
+      'voice_diaries',
       where: 'date = ?',
       whereArgs: [date],
     );
-    return List.generate(maps.length, (i) => MoodRecord.fromMap(maps[i]));
+    return List.generate(maps.length, (i) => VoiceDiaryRecord.fromMap(maps[i]));
   }
 
-  Future<MoodRecord?> getMoodRecord(String date) async {
+  Future<VoiceDiaryRecord?> getVoiceDiary(String date) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'mood_records',
+      'voice_diaries',
       where: 'date = ?',
       whereArgs: [date],
       limit: 1,
     );
     if (maps.isEmpty) return null;
-    return MoodRecord.fromMap(maps.first);
+    return VoiceDiaryRecord.fromMap(maps.first);
   }
 
-  Future<int> updateMoodRecord(MoodRecord record) async {
+  Future<int> updateVoiceDiary(VoiceDiaryRecord record) async {
     final db = await database;
     return await db.update(
-      'mood_records',
+      'voice_diaries',
       record.toMap(),
       where: 'id = ?',
       whereArgs: [record.id],
     );
   }
 
-  Future<int> deleteMoodRecord(int id) async {
+  Future<int> deleteVoiceDiary(int id) async {
     final db = await database;
     return await db.delete(
-      'mood_records',
+      'voice_diaries',
       where: 'id = ?',
       whereArgs: [id],
     );
   }
 
-  Future<List<MoodRecord>> getMoodRecordsByDateRange(String startDate) async {
+  Future<List<VoiceDiaryRecord>> getVoiceDiariesByDateRange(String startDate) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'mood_records',
+      'voice_diaries',
       where: 'date >= ?',
       whereArgs: [startDate],
     );
-    return List.generate(maps.length, (i) => MoodRecord.fromMap(maps[i]));
+    return List.generate(maps.length, (i) => VoiceDiaryRecord.fromMap(maps[i]));
   }
 
   Future<int> insertDailyScore(DailyScore score) async {
@@ -582,5 +593,17 @@ class DatabaseService {
       where: 'music_id = ?',
       whereArgs: [music.id],
     );
+  }
+
+  Future<void> saveUserProfile(UserProfile profile) async {
+    final db = await database;
+    await db.saveUserProfile(profile.toMap());
+  }
+
+  Future<UserProfile?> getUserProfile() async {
+    final db = await database;
+    final map = await db.getUserProfile();
+    if (map == null) return null;
+    return UserProfile.fromMap(map);
   }
 }

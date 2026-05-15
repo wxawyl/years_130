@@ -2,7 +2,6 @@ import 'package:intl/intl.dart';
 import '../models/sleep_record.dart';
 import '../models/diet_record.dart';
 import '../models/exercise_record.dart';
-import '../models/mood_record.dart';
 import '../models/daily_score.dart';
 import '../services/database_service.dart';
 
@@ -154,33 +153,8 @@ class ScoreService {
     return score.clamp(0, 25);
   }
 
-  Future<double> calculateMoodScore(String date) async {
-    final records = await _dbService.getMoodRecords(date);
-    if (records.isEmpty) return 0;
-
-    double score = 0;
-    int totalMood = 0;
-
-    for (var record in records) {
-      totalMood += record.moodLevel;
-    }
-
-    double avgMood = totalMood / records.length;
-    
-    score += avgMood * 4;
-
-    for (var record in records) {
-      if (record.note != null && record.note!.isNotEmpty) {
-        score += 5;
-        break;
-      }
-    }
-
-    return score.clamp(0, 25);
-  }
-
   Future<List<String>> generateSuggestions(
-      double sleepScore, double dietScore, double exerciseScore, double moodScore) async {
+      double sleepScore, double dietScore, double exerciseScore) async {
     List<String> suggestions = [];
 
     if (sleepScore < 15) {
@@ -198,11 +172,6 @@ class ScoreService {
       suggestions.add('有氧运动和力量训练相结合效果更佳');
     }
 
-    if (moodScore < 15) {
-      suggestions.add('保持积极心态，每天记录一件感恩的事');
-      suggestions.add('适当进行冥想和放松训练');
-    }
-
     return suggestions;
   }
 
@@ -210,12 +179,11 @@ class ScoreService {
     double sleepScore = await calculateSleepScore(date);
     double dietScore = await calculateDietScore(date);
     double exerciseScore = await calculateExerciseScore(date);
-    double moodScore = await calculateMoodScore(date);
 
-    double totalScore = sleepScore + dietScore + exerciseScore + moodScore;
+    double totalScore = sleepScore + dietScore + exerciseScore;
 
     List<String> suggestions = await generateSuggestions(
-      sleepScore, dietScore, exerciseScore, moodScore
+      sleepScore, dietScore, exerciseScore
     );
 
     DailyScore dailyScore = DailyScore(
@@ -223,7 +191,7 @@ class ScoreService {
       sleepScore: sleepScore,
       dietScore: dietScore,
       exerciseScore: exerciseScore,
-      moodScore: moodScore,
+      moodScore: 0,
       totalScore: totalScore,
       suggestions: suggestions.join('||'),
     );

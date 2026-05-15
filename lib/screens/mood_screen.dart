@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../widgets/daily_knowledge_card.dart';
+import '../services/daily_suggestion_service.dart';
+import '../services/sentiment_analysis_service.dart';
 import '../services/database_service.dart';
-import '../services/score_service.dart';
-import '../models/mood_record.dart';
-import '../models/knowledge_item.dart';
+import '../models/voice_diary_record.dart';
 import '../l10n/app_localizations.dart';
-import 'music_selection_screen.dart';
-import 'analysis_screen.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -16,146 +14,213 @@ class MoodScreen extends StatefulWidget {
 }
 
 class _MoodScreenState extends State<MoodScreen> {
-  final _dbService = DatabaseService();
-  final _scoreService = ScoreService();
-  List<MoodRecord> _todayRecords = [];
-  List<KnowledgeItem> _knowledgeItems = [];
-  int _moodLevel = 3;
-  final _noteController = TextEditingController();
+  final TextEditingController _diaryController = TextEditingController();
+  final DatabaseService _dbService = DatabaseService();
+  List<VoiceDiaryRecord> _diaries = [];
+  bool _isAnalyzing = false;
+  DailySuggestion? _todaySuggestion;
+  List<String> _recentStressors = [];
+  double? _recentSentimentScore;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadDiaries();
+    _loadSuggestion();
   }
 
-  Future<void> _loadData() async {
-    await _loadKnowledge();
-    await _loadTodayRecords();
+  @override
+  void dispose() {
+    _diaryController.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadKnowledge() async {
-    _knowledgeItems = await _dbService.getKnowledgeByCategory(4);
-    setState(() {});
-  }
-
-  Future<void> _loadTodayRecords() async {
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    _todayRecords = await _dbService.getMoodRecords(today);
-    setState(() {});
-  }
-
-  String _getMoodText(int level, AppLocalizations l10n) {
-    switch (level) {
-      case 5:
-        return l10n.veryHappy;
-      case 4:
-        return l10n.happy;
-      case 3:
-        return l10n.normal;
-      case 2:
-        return l10n.sad;
-      case 1:
-        return l10n.verySad;
-      default:
-        return l10n.normal;
+  Future<void> _loadDiaries() async {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final diaries = await _dbService.getVoiceDiariesByDateRange(today);
+    if (mounted) {
+      setState(() {
+        _diaries = diaries.reversed.toList();
+      });
     }
   }
 
-  IconData _getMoodIcon(int level) {
-    switch (level) {
-      case 5:
-        return Icons.sentiment_very_satisfied;
-      case 4:
-        return Icons.sentiment_satisfied;
-      case 3:
-        return Icons.sentiment_neutral;
-      case 2:
-        return Icons.sentiment_dissatisfied;
-      case 1:
-        return Icons.sentiment_very_dissatisfied;
-      default:
-        return Icons.sentiment_neutral;
-    }
-  }
-
-  Color _getMoodColor(int level) {
-    switch (level) {
-      case 5:
-        return const Color(0xFF66BB6A);
-      case 4:
-        return const Color(0xFF9CCC65);
-      case 3:
-        return const Color(0xFFFFCA28);
-      case 2:
-        return const Color(0xFFFF7043);
-      case 1:
-        return const Color(0xFFEF5350);
-      default:
-        return const Color(0xFFFFCA28);
-    }
-  }
-
-  Future<void> _saveRecord({int? editId}) async {
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    MoodRecord record = MoodRecord(
-      id: editId,
-      date: today,
-      moodLevel: _moodLevel,
-      note: _noteController.text,
-    );
-
-    if (editId != null) {
-      await _dbService.updateMoodRecord(record);
-    } else {
-      await _dbService.insertMoodRecord(record);
-    }
-    await _scoreService.calculateDailyScore(today);
-    await _loadTodayRecords();
-
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(editId != null ? l10n.recordUpdated : l10n.moodRecordSaved)),
-    );
-
-    _noteController.clear();
-    setState(() {
-      _moodLevel = 3;
-    });
-  }
-
-  void _editRecord(MoodRecord record) {
-    setState(() {
-      _moodLevel = record.moodLevel;
-      _noteController.text = record.note ?? '';
-    });
-  }
-
-  void _deleteRecord(MoodRecord record) {
-    final l10n = AppLocalizations.of(context)!;
+  Future<void> _loadSuggestion() async {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final diaries = await _dbService.getVoiceDiariesByDateRange(today);
     
+    List<String> stressors = [];
+    double? sentimentScore;
+    
+    if (diaries.isNotEmpty) {
+      for (var diary in diaries) {
+        if (diary.stressors != null) {
+          stressors.addAll(diary.stressors!);
+        }
+        if (diary.sentimentScore != null) {
+          sentimentScore = diary.sentimentScore;
+        }
+      }
+      stressors = stressors.toSet().toList();
+    }
+
+    if (mounted) {
+      setState(() {
+        _recentStressors = stressors;
+        _recentSentimentScore = sentimentScore;
+        _todaySuggestion = DailySuggestionService.getTodaySuggestion(
+          stressors: stressors.isEmpty ? null : stressors,
+          sentimentScore: sentimentScore,
+        );
+      });
+    }
+  }
+
+  Future<void> _saveDiary() async {
+    if (_diaryController.text.trim().isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isAnalyzing = true;
+    });
+
+    try {
+      final result = SentimentAnalysisService.analyze(_diaryController.text);
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      final record = VoiceDiaryRecord(
+        date: today,
+        content: _diaryController.text,
+        durationSeconds: null,
+        sentimentScore: result.sentimentScore,
+        anxietyLevel: result.anxietyLevel,
+        stressors: result.stressors,
+        moodCategory: result.moodCategory,
+      );
+
+      await _dbService.insertVoiceDiary(record);
+      
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+        });
+        _diaryController.clear();
+        await _loadDiaries();
+        await _loadSuggestion();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteDiary(int id) async {
+    await _dbService.deleteVoiceDiary(id);
+    await _loadDiaries();
+    await _loadSuggestion();
+  }
+
+  void _showDiaryDetails() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.confirmDelete),
-        content: Text(l10n.deleteRecordConfirm),
+        title: const Text('日记详情'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: _diaries.length,
+            itemBuilder: (context, index) {
+              final diary = _diaries[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      diary.moodCategory ?? '未知',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFFFCA28),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: _getAnxietyColor(diary.anxietyLevel).withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        _getAnxietyLabel(diary.anxietyLevel),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: _getAnxietyColor(diary.anxietyLevel),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (diary.createdAt != null)
+                                  Text(
+                                    diary.createdAt!,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.grey),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _showDeleteDialog(diary.id!);
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(diary.content),
+                      if (diary.stressors != null && diary.stressors!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: diary.stressors!.map((stressor) => Chip(
+                            label: Text(stressor, style: const TextStyle(fontSize: 12)),
+                            backgroundColor: Colors.grey[100],
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          )).toList(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _dbService.deleteMoodRecord(record.id!);
-              await _scoreService.calculateDailyScore(DateFormat('yyyy-MM-dd').format(DateTime.now()));
-              await _loadTodayRecords();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.recordDeleted)),
-              );
-            },
-            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+            child: const Text('关闭'),
           ),
         ],
       ),
@@ -176,216 +241,225 @@ class _MoodScreenState extends State<MoodScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.moodLevel,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Text(
+              '心情日记',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(20),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _getMoodColor(_moodLevel).withOpacity(0.2),
-                      ),
-                      child: Icon(
-                        _getMoodIcon(_moodLevel),
-                        size: 80,
-                        color: _getMoodColor(_moodLevel),
+                    TextField(
+                      controller: _diaryController,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        hintText: '写下你现在的心情...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      _getMoodText(_moodLevel, l10n),
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: _getMoodColor(_moodLevel),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isAnalyzing ? null : _saveDiary,
+                        icon: _isAnalyzing
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.save),
+                        label: Text(_isAnalyzing ? '保存中...' : '保存'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFCA28),
+                          foregroundColor: Colors.black87,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(5, (index) {
-                        int level = 5 - index;
-                        bool isSelected = _moodLevel == level;
-                        return GestureDetector(
-                          onTap: () => setState(() => _moodLevel = level),
-                          child: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isSelected
-                                  ? _getMoodColor(level)
-                                  : _getMoodColor(level).withOpacity(0.2),
-                              border: isSelected
-                                  ? Border.all(color: _getMoodColor(level), width: 3)
-                                  : null,
-                            ),
-                            child: Center(
-                              child: Icon(
-                                _getMoodIcon(level),
-                                color: isSelected ? Colors.white : _getMoodColor(level),
-                              ),
+                    const SizedBox(height: 16),
+                    if (_diaries.isNotEmpty)
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _showDiaryDetails,
+                          icon: const Icon(Icons.list_alt),
+                          label: const Text('日记详情'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                        );
-                      }),
-                    ),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              l10n.note,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextField(
-                  controller: _noteController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: l10n.note,
-                    border: const OutlineInputBorder(),
+            if (_todaySuggestion != null) ...[
+              const Text(
+                '今日建议',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFCA28).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Center(
+                              child: Text(
+                                _todaySuggestion!.icon,
+                                style: const TextStyle(fontSize: 32),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              _todaySuggestion!.title,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFFFCA28),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        _todaySuggestion!.content,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.6,
+                        ),
+                      ),
+                      if (_todaySuggestion!.source.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info,
+                              size: 16,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _todaySuggestion!.source,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (_recentStressors.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _recentStressors.map((stressor) => Chip(
+                            label: Text(stressor),
+                            backgroundColor: const Color(0xFFFFCA28).withOpacity(0.2),
+                            side: BorderSide.none,
+                          )).toList(),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveRecord,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _getMoodColor(_moodLevel),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text(l10n.recordMood, style: const TextStyle(fontSize: 16)),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MusicSelectionScreen()),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7E57C2),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.music_note),
-                  const SizedBox(width: 8),
-                  Text(l10n.meditationMusic, style: const TextStyle(fontSize: 16)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AnalysisScreen(analysisType: AnalysisType.mood)),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7E57C2),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              icon: const Icon(Icons.bar_chart),
-              label: Text(l10n.moodAnalysis, style: const TextStyle(fontSize: 16)),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.todayRecords,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            _todayRecords.isEmpty
-                ? Center(child: Text(l10n.noMoodRecords))
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _todayRecords.length,
-                    itemBuilder: (context, index) {
-                      var record = _todayRecords[index];
-                      return Card(
-                        child: ListTile(
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: _getMoodColor(record.moodLevel).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              _getMoodIcon(record.moodLevel),
-                              color: _getMoodColor(record.moodLevel),
-                            ),
-                          ),
-                          title: Text(_getMoodText(record.moodLevel, l10n)),
-                          subtitle: record.note != null && record.note!.isNotEmpty
-                              ? Text(record.note!)
-                              : null,
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () => _editRecord(record),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteRecord(record),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.moodEducation,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _knowledgeItems.length,
-              itemBuilder: (context, index) {
-                var item = _knowledgeItems[index];
-                return Card(
-                  child: ExpansionTile(
-                    title: Text(item.title),
-                    subtitle: Text('${l10n.source}: ${item.source}'),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(item.content),
-                      ),
-                    ],
-                  ),
-                );
-              },
+              const SizedBox(height: 20),
+            ],
+            DailyKnowledgeSection(
+              category: 'mood',
+              title: l10n.moodEducation,
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  String _getAnxietyLabel(int? level) {
+    switch (level) {
+      case 1:
+        return '放松';
+      case 2:
+        return '平静';
+      case 3:
+        return '轻微焦虑';
+      case 4:
+        return '中度焦虑';
+      case 5:
+        return '高度焦虑';
+      default:
+        return '未知';
+    }
+  }
+
+  Color _getAnxietyColor(int? level) {
+    switch (level) {
+      case 1:
+      case 2:
+        return Colors.green;
+      case 3:
+        return Colors.orange;
+      case 4:
+      case 5:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void _showDeleteDialog(int id) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除日记'),
+        content: const Text('确定要删除这篇日记吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteDiary(id);
+            },
+            child: const Text('删除', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
