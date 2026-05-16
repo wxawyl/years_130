@@ -6,18 +6,25 @@ import '../services/locale_service.dart';
 import '../services/share_service.dart';
 import '../services/insight_discovery_service.dart';
 import '../services/daily_schedule_service.dart';
+import '../services/model_router_service.dart';
 import '../models/daily_score.dart';
 import '../models/ai_insight.dart';
 import '../models/daily_schedule.dart';
-import '../widgets/score_card.dart';
-import '../widgets/quick_action_button.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/theme_provider.dart';
+import '../widgets/dynamic_background.dart';
+import '../widgets/mood_indicator.dart';
+import '../widgets/digital_twin_widget.dart';
 import 'sleep_screen.dart';
 import 'diet_screen.dart';
 import 'exercise_screen.dart';
 import 'mood_screen.dart';
 import 'feedback_screen.dart';
 import 'user_profile_screen.dart';
+import 'model_settings_screen.dart';
+import 'theme_demo_screen.dart';
+import 'knowledge_base_screen.dart';
+import 'proactive_interaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,46 +34,107 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Future<DailyScore?> _dailyScoreFuture = ScoreService().getTodayScore();
-  final InsightDiscoveryService _insightService = InsightDiscoveryService();
-  final DailyScheduleService _scheduleService = DailyScheduleService();
-  List<AiInsight> _insights = [];
-  List<DailySchedule> _schedules = [];
-  bool _isLoading = true;
+  int _currentIndex = 0;
 
   @override
-  void initState() {
-    super.initState();
-    _loadData();
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_getPageTitle(_currentIndex, l10n)),
+        centerTitle: true,
+        actions: _buildAppBarActions(_currentIndex),
+      ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          HomeContent(),
+          SleepScreen(),
+          DietScreen(),
+          ExerciseScreen(),
+          MoodScreen(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.home), label: l10n.home),
+          BottomNavigationBarItem(icon: const Icon(Icons.bed), label: l10n.sleep),
+          BottomNavigationBarItem(icon: const Icon(Icons.food_bank), label: l10n.diet),
+          BottomNavigationBarItem(icon: const Icon(Icons.directions_run), label: l10n.exercise),
+          BottomNavigationBarItem(icon: const Icon(Icons.sentiment_satisfied), label: l10n.mood),
+        ],
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+        },
+      ),
+      floatingActionButton: _currentIndex == 0 ? _buildFeedbackFloatingButton(context, l10n) : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
   }
 
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    try {
-      final insights = await _insightService.getInsights(forceDemo: true);
-      final schedules = await _scheduleService.getTodaySchedules(forceDemo: true);
-      setState(() {
-        _insights = insights;
-        _schedules = schedules;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
+  String _getPageTitle(int index, AppLocalizations l10n) {
+    switch (index) {
+      case 0:
+        return l10n.appTitle;
+      case 1:
+        return l10n.sleep;
+      case 2:
+        return l10n.diet;
+      case 3:
+        return l10n.exercise;
+      case 4:
+        return l10n.mood;
+      default:
+        return l10n.appTitle;
     }
   }
 
-  String _getScoreMessage(double score, AppLocalizations l10n) {
-    if (score >= 80) return l10n.veryGood;
-    if (score >= 60) return l10n.good;
-    if (score >= 40) return l10n.needsWork;
-    return l10n.takeCare;
-  }
-
-  Color _getScoreColor(double score) {
-    if (score >= 80) return const Color(0xFF66BB6A);
-    if (score >= 60) return const Color(0xFFFFCA28);
-    if (score >= 40) return const Color(0xFFFF7043);
-    return const Color(0xFFEF5350);
+  List<Widget> _buildAppBarActions(int index) {
+    if (index == 0) {
+      return [
+        IconButton(
+          icon: const Icon(Icons.palette),
+          tooltip: '心情主题',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ThemeDemoScreen()),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.smart_toy),
+          tooltip: 'AI模型设置',
+          onPressed: () {
+            final modelConfig = Provider.of<UserModelConfig>(context, listen: false);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ModelSettingsScreen(modelConfig: modelConfig)),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.language),
+          onPressed: () => _showLanguageSelector(context),
+        ),
+        IconButton(
+          icon: const CircleAvatar(
+            child: Icon(Icons.person),
+          ),
+          tooltip: '个人信息',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const UserProfileScreen()),
+            );
+          },
+        ),
+      ];
+    }
+    return [];
   }
 
   void _showLanguageSelector(BuildContext context) {
@@ -94,6 +162,108 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildFeedbackFloatingButton(BuildContext context, AppLocalizations l10n) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF7E57C2), Color(0xFF5E35B1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7E57C2).withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FeedbackScreen()),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: const Icon(Icons.lightbulb_outline, size: 28),
+        tooltip: l10n.feedback,
+      ),
+    );
+  }
+}
+
+class HomeContent extends StatefulWidget {
+  const HomeContent({super.key});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  final Future<DailyScore?> _dailyScoreFuture = ScoreService().getTodayScore();
+  final InsightDiscoveryService _insightService = InsightDiscoveryService();
+  final DailyScheduleService _scheduleService = DailyScheduleService();
+  List<AiInsight> _insights = [];
+  List<DailySchedule> _schedules = [];
+  bool _isLoading = true;
+  DailyScore? _currentScore;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final insights = await _insightService.getInsights(forceDemo: true);
+      final schedules = await _scheduleService.getTodaySchedules(forceDemo: true);
+      final score = await ScoreService().getTodayScore();
+      
+      setState(() {
+        _insights = insights;
+        _schedules = schedules;
+        _currentScore = score;
+        _isLoading = false;
+      });
+      
+      // 更新主题
+      if (mounted) {
+        _updateThemeFromScore(score);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _updateThemeFromScore(DailyScore? score) {
+    if (score == null) return;
+    
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
+    // 这里可以根据实际的睡眠和运动记录来判断
+    // 现在先用模拟数据
+    final hasSleptWell = score.sleepScore > 70;
+    final hasExercised = score.exerciseScore > 60;
+    final isSleepDeprived = score.sleepScore < 40;
+    
+    themeProvider.updateFromHealthData(
+      healthScore: score.totalScore,
+      hasSleptWell: hasSleptWell,
+      hasExercised: hasExercised,
+      isSleepDeprived: isSleepDeprived,
+    );
+  }
+
+  Color _getScoreColor(double score) {
+    if (score >= 80) return const Color(0xFF66BB6A);
+    if (score >= 60) return const Color(0xFFFFCA28);
+    if (score >= 40) return const Color(0xFFFF7043);
+    return const Color(0xFFEF5350);
   }
 
   void _showScheduleDialog(DailySchedule schedule) {
@@ -143,9 +313,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   schedule.isCompleted = true;
                 });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('已完成！继续保持！')),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('已完成！继续保持！')),
+                  );
+                }
               },
               child: const Text('接受'),
             ),
@@ -219,44 +391,81 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.appTitle),
-        centerTitle: true,
+  void _showTwinDetail(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('健康状态详情'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('当前健康主题: ${themeProvider.currentTheme.name}'),
+            const SizedBox(height: 12),
+            const Text('数字孪生会根据你的睡眠、运动、饮食和情绪数据实时变化。'),
+            const SizedBox(height: 8),
+            const Text('• 良好睡眠 = 神采奕奕'),
+            const Text('• 规律运动 = 肌肉线条明显'),
+            const Text('• 健康饮食 = 容光焕发'),
+            const Text('• 积极情绪 = 微笑表情'),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: () => _showLanguageSelector(context),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('关闭'),
           ),
-          IconButton(
-            icon: const CircleAvatar(
-              child: Icon(Icons.person),
-            ),
-            tooltip: '个人信息',
+          TextButton(
             onPressed: () {
+              Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const UserProfileScreen()),
+                MaterialPageRoute(builder: (context) => const ThemeDemoScreen()),
               );
             },
+            child: const Text('查看主题'),
           ),
         ],
       ),
-      body: SingleChildScrollView(
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return DynamicBackground(
+      theme: themeProvider.currentTheme,
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 数字孪生
+            Center(
+              child: Consumer<ThemeProvider>(
+                builder: (context, theme, child) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DigitalTwinWidget(
+                      size: 220,
+                      onTap: () {
+                        _showTwinDetail(context);
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            
             Text(
               DateFormat('yyyy年MM月dd日 EEEE').format(DateTime.now()),
               style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
-            // 简化的今日健康评分
             FutureBuilder<DailyScore?>(
               future: _dailyScoreFuture,
               builder: (context, snapshot) {
@@ -306,282 +515,315 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-            const SizedBox(height: 24),
-            // 今日日程 - 合并到一个卡片
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '今日日程',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                TextButton.icon(
-                  onPressed: _loadData,
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('刷新'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (_schedules.isEmpty)
-              const Center(child: Text('暂无日程'))
-            else
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _schedules.where((s) => !s.isDismissed).toList().asMap().entries.map((entry) {
-                      int index = entry.key;
-                      DailySchedule schedule = entry.value;
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: () => _showScheduleDialog(schedule),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: _getPriorityColor(schedule.priority).withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(
-                                    _getPriorityIcon(schedule.priority),
-                                    color: _getPriorityColor(schedule.priority),
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        schedule.title,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        schedule.content,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      if (schedule.scheduleTime != null) ...[
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              schedule.scheduleTime!,
-                                              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                                const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-                              ],
-                            ),
-                          ),
-                          if (index < _schedules.where((s) => !s.isDismissed).length - 1)
-                            Divider(height: 24, color: Colors.grey[300]),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '今日日程',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            const SizedBox(height: 24),
-            // 关联性发现 - 合并到一个卡片
-            const Text(
-              '关联性发现',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (_insights.isEmpty)
-              const Center(child: Text('继续记录健康数据以发现更多洞察'))
-            else
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Builder(
-                    builder: (context) {
-                      final insight = _insights.first;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+              TextButton.icon(
+                onPressed: _loadData,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('刷新'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_schedules.isEmpty)
+            const Center(child: Text('暂无日程'))
+          else
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _schedules.where((s) => !s.isDismissed).toList().asMap().entries.map((entry) {
+                    int index = entry.key;
+                    DailySchedule schedule = entry.value;
+                    return Column(
+                      children: [
+                        InkWell(
+                          onTap: () => _showScheduleDialog(schedule),
+                          child: Row(
                             children: [
                               Container(
-                                width: 36,
-                                height: 36,
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
-                                  color: _getInsightIconColor(insight.insightType).withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(9),
+                                  color: _getPriorityColor(schedule.priority).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Icon(
-                                  Icons.lightbulb,
-                                  color: _getInsightIconColor(insight.insightType),
-                                  size: 20,
+                                  _getPriorityIcon(schedule.priority),
+                                  color: _getPriorityColor(schedule.priority),
+                                  size: 24,
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _getInsightTypeLabel(insight.insightType),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: _getInsightIconColor(insight.insightType),
-                                      ),
-                                    ),
-                                    Text(
-                                      insight.title,
+                                      schedule.title,
                                       style: const TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      schedule.content,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    if (schedule.scheduleTime != null) ...[
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            schedule.scheduleTime!,
+                                            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '${(insight.confidence * 100).toStringAsFixed(0)}%',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                              const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                             ],
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            insight.description,
-                            style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                          ),
-                          if (insight.suggestion != null) ...[
-                            const SizedBox(height: 10),
+                        ),
+                        if (index < _schedules.where((s) => !s.isDismissed).length - 1)
+                          Divider(height: 24, color: Colors.grey[300]),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          const SizedBox(height: 24),
+          const Text(
+            '关联性发现',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_insights.isEmpty)
+            const Center(child: Text('继续记录健康数据以发现更多洞察'))
+          else
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Builder(
+                  builder: (context) {
+                    final insight = _insights.first;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
-                                color: Colors.grey[50],
-                                borderRadius: BorderRadius.circular(10),
+                                color: _getInsightIconColor(insight.insightType).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(9),
                               ),
-                              child: Row(
+                              child: Icon(
+                                Icons.lightbulb,
+                                color: _getInsightIconColor(insight.insightType),
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(Icons.tips_and_updates, color: Color(0xFF66BB6A), size: 18),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      '💡 ${insight.suggestion!}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF66BB6A),
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                  Text(
+                                    _getInsightTypeLabel(insight.insightType),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: _getInsightIconColor(insight.insightType),
+                                    ),
+                                  ),
+                                  Text(
+                                    insight.title,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${(insight.confidence * 100).toStringAsFixed(0)}%',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          insight.description,
+                          style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                        ),
+                        if (insight.suggestion != null) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.tips_and_updates, color: Color(0xFF66BB6A), size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '💡 ${insight.suggestion!}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF66BB6A),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          const SizedBox(height: 20),
+          const Text(
+            '新功能体验',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const KnowledgeBaseScreen()),
                       );
                     },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.search, color: Colors.blue, size: 28),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            '健康知识库',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'RAG智能检索',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(icon: const Icon(Icons.home), label: l10n.home),
-          BottomNavigationBarItem(icon: const Icon(Icons.bed), label: l10n.sleep),
-          BottomNavigationBarItem(icon: const Icon(Icons.food_bank), label: l10n.diet),
-          BottomNavigationBarItem(icon: const Icon(Icons.directions_run), label: l10n.exercise),
-          BottomNavigationBarItem(icon: const Icon(Icons.sentiment_satisfied), label: l10n.mood),
-        ],
-        onTap: (index) {
-          switch (index) {
-            case 1:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const SleepScreen()));
-              break;
-            case 2:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const DietScreen()));
-              break;
-            case 3:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const ExerciseScreen()));
-              break;
-            case 4:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const MoodScreen()));
-              break;
-          }
-        },
-      ),
-      floatingActionButton: _buildFeedbackFloatingButton(context, l10n),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
-
-  Widget _buildFeedbackFloatingButton(BuildContext context, AppLocalizations l10n) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF7E57C2), Color(0xFF5E35B1)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(50),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF7E57C2).withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ProactiveInteractionScreen()),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.health_and_safety, color: Colors.red, size: 28),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            '主动关怀',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '智能提醒',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 20),
         ],
       ),
-      child: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const FeedbackScreen()),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: const Icon(Icons.lightbulb_outline, size: 28),
-        tooltip: l10n.feedback,
       ),
     );
   }

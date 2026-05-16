@@ -1,86 +1,93 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../config/ai_config.dart';
+import '../model_provider.dart';
+import '../../config/ai_config.dart';
 
-class AiIntegrationService {
-  bool get isConfigured {
-    return AiConfig.enableAi && (AiConfig.apiKey?.isNotEmpty ?? false);
-  }
+/// OpenAI 模型提供者
+class OpenAIProvider implements ModelProvider {
+  final String? apiKey;
+  final String baseUrl;
+  final String model;
+  final int timeoutSeconds;
 
-  bool get isCloudConfigured => isConfigured;
+  OpenAIProvider({
+    this.apiKey,
+    this.baseUrl = 'https://api.openai.com/v1',
+    this.model = 'gpt-3.5-turbo',
+    this.timeoutSeconds = 30,
+  });
 
-  Future<void> initialize() async {
-    // 初始化工作
-  }
+  @override
+  String get providerName => 'OpenAI';
 
+  @override
+  String get description => 'GPT-3.5/4 模型，全球最佳质量';
+
+  @override
+  bool get isAvailable => (apiKey?.isNotEmpty ?? false) || (AiConfig.apiKey?.isNotEmpty ?? false);
+
+  @override
+  int get costLevel => 3;
+
+  @override
+  int get qualityLevel => 5;
+
+  @override
   Future<String> generateInsights(Map<String, dynamic> data) async {
-    if (!AiConfig.enableAi || AiConfig.apiKey == null || AiConfig.apiKey!.isEmpty) {
-      return 'demo_mode';
-    }
-
     try {
       final prompt = _buildInsightPrompt(data);
-      
-      final response = await http.post(
-        Uri.parse('${AiConfig.baseUrl}/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AiConfig.apiKey}',
-        },
-        body: jsonEncode({
-          'model': AiConfig.model,
-          'messages': [
-            {'role': 'system', 'content': '你是一个专业的健康数据分析助手。请根据用户的健康数据，发现隐藏的关联性和模式。只返回JSON，不要包含任何其他文字说明。'},
-            {'role': 'user', 'content': prompt},
-          ],
-          'temperature': 0.7,
-          'max_tokens': 1000,
-        }),
-      ).timeout(const Duration(seconds: AiConfig.timeoutSeconds));
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        return jsonResponse['choices'][0]['message']['content'];
-      }
-      return 'demo_mode';
+      final response = await _makeApiRequest([
+        {'role': 'system', 'content': '你是一个专业的健康数据分析助手。请根据用户的健康数据，发现隐藏的关联性和模式。只返回JSON，不要包含任何其他文字说明。'},
+        {'role': 'user', 'content': prompt},
+      ]);
+      return response;
     } catch (e) {
       return 'demo_mode';
     }
   }
 
+  @override
   Future<String> generateSchedule(Map<String, dynamic> data) async {
-    if (!AiConfig.enableAi || AiConfig.apiKey == null || AiConfig.apiKey!.isEmpty) {
-      return 'demo_mode';
-    }
-
     try {
       final prompt = _buildSchedulePrompt(data);
-      
-      final response = await http.post(
-        Uri.parse('${AiConfig.baseUrl}/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AiConfig.apiKey}',
-        },
-        body: jsonEncode({
-          'model': AiConfig.model,
-          'messages': [
-            {'role': 'system', 'content': '你是一个专业的健康管理助手。请根据用户的健康数据，给出个性化的日程建议和提醒。只返回JSON，不要包含任何其他文字说明。'},
-            {'role': 'user', 'content': prompt},
-          ],
-          'temperature': 0.7,
-          'max_tokens': 800,
-        }),
-      ).timeout(const Duration(seconds: AiConfig.timeoutSeconds));
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        return jsonResponse['choices'][0]['message']['content'];
-      }
-      return 'demo_mode';
+      final response = await _makeApiRequest([
+        {'role': 'system', 'content': '你是一个专业的健康管理助手。请根据用户的健康数据，给出个性化的日程建议和提醒。只返回JSON，不要包含任何其他文字说明。'},
+        {'role': 'user', 'content': prompt},
+      ]);
+      return response;
     } catch (e) {
       return 'demo_mode';
     }
+  }
+
+  @override
+  Future<SentimentAnalysisResult>? analyzeSentiment(String text) => null;
+
+  Future<String> _makeApiRequest(List<Map<String, String>> messages) async {
+    final key = apiKey ?? AiConfig.apiKey;
+    if (key == null || key.isEmpty) {
+      return 'demo_mode';
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/chat/completions'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $key',
+      },
+      body: jsonEncode({
+        'model': model,
+        'messages': messages,
+        'temperature': 0.7,
+        'max_tokens': 1000,
+      }),
+    ).timeout(Duration(seconds: timeoutSeconds));
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse['choices'][0]['message']['content'];
+    }
+    return 'demo_mode';
   }
 
   String _buildInsightPrompt(Map<String, dynamic> data) {

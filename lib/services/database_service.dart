@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../models/sleep_record.dart';
@@ -9,6 +10,9 @@ import '../models/knowledge_item.dart';
 import '../models/reminder.dart';
 import '../models/meditation_music.dart';
 import '../models/user_profile.dart';
+import '../models/health_vector.dart';
+import '../models/health_anomaly.dart';
+import '../models/smart_reminder.dart';
 
 class MemoryDatabase {
   static MemoryDatabase? _instance;
@@ -22,6 +26,9 @@ class MemoryDatabase {
   List<Map<String, dynamic>> _habitTracking = [];
   List<Map<String, dynamic>> _sharePosts = [];
   List<Map<String, dynamic>> _customMusic = [];
+  List<Map<String, dynamic>> _healthVectors = [];
+  List<Map<String, dynamic>> _healthAnomalies = [];
+  List<Map<String, dynamic>> _smartReminders = [];
   Map<String, dynamic>? _userProfile;
   int _nextId = 1;
   bool _isInitialized = false;
@@ -92,6 +99,15 @@ class MemoryDatabase {
       case 'custom_music':
         _customMusic.add(data);
         break;
+      case 'health_vectors':
+        _healthVectors.add(data);
+        break;
+      case 'health_anomalies':
+        _healthAnomalies.add(data);
+        break;
+      case 'smart_reminders':
+        _smartReminders.add(data);
+        break;
     }
     return data['id'];
   }
@@ -145,6 +161,15 @@ class MemoryDatabase {
         break;
       case 'custom_music':
         records = List.from(_customMusic);
+        break;
+      case 'health_vectors':
+        records = List.from(_healthVectors);
+        break;
+      case 'health_anomalies':
+        records = List.from(_healthAnomalies);
+        break;
+      case 'smart_reminders':
+        records = List.from(_smartReminders);
         break;
       default:
         records = [];
@@ -212,6 +237,15 @@ class MemoryDatabase {
           }
         }
         break;
+      case 'health_vectors':
+        updated = _updateRecord(_healthVectors, data, id);
+        break;
+      case 'health_anomalies':
+        updated = _updateRecord(_healthAnomalies, data, id);
+        break;
+      case 'smart_reminders':
+        updated = _updateRecord(_smartReminders, data, id);
+        break;
     }
     return updated;
   }
@@ -246,6 +280,15 @@ class MemoryDatabase {
         break;
       case 'custom_music':
         deleted = _deleteRecord(_customMusic, id);
+        break;
+      case 'health_vectors':
+        deleted = _deleteRecord(_healthVectors, id);
+        break;
+      case 'health_anomalies':
+        deleted = _deleteRecord(_healthAnomalies, id);
+        break;
+      case 'smart_reminders':
+        deleted = _deleteRecord(_smartReminders, id);
         break;
     }
     return deleted;
@@ -605,5 +648,147 @@ class DatabaseService {
     final map = await db.getUserProfile();
     if (map == null) return null;
     return UserProfile.fromMap(map);
+  }
+
+  Future<int> insertHealthVector(HealthVector vector) async {
+    final db = await database;
+    return await db.insert('health_vectors', vector.toMap());
+  }
+
+  Future<List<HealthVector>> getHealthVectors({String? date, int? recordType, int? limit}) async {
+    final db = await database;
+    List<Map<String, dynamic>> maps;
+    
+    if (date != null) {
+      maps = await db.query(
+        'health_vectors',
+        where: 'date = ?',
+        whereArgs: [date],
+        limit: limit,
+      );
+    } else if (recordType != null) {
+      maps = await db.query(
+        'health_vectors',
+        where: 'record_type = ?',
+        whereArgs: [recordType],
+        limit: limit,
+      );
+    } else {
+      maps = await db.query('health_vectors', limit: limit);
+    }
+    
+    return List.generate(maps.length, (i) => HealthVector.fromMap(maps[i]));
+  }
+
+  Future<List<HealthVector>> getHealthVectorsByDateRange(String startDate) async {
+    final db = await database;
+    final maps = await db.query(
+      'health_vectors',
+      where: 'date >= ?',
+      whereArgs: [startDate],
+    );
+    return List.generate(maps.length, (i) => HealthVector.fromMap(maps[i]));
+  }
+
+  Future<int> updateHealthVector(HealthVector vector) async {
+    final db = await database;
+    return await db.update(
+      'health_vectors',
+      vector.toMap(),
+      where: 'id = ?',
+      whereArgs: [vector.id],
+    );
+  }
+
+  Future<int> deleteHealthVector(int id) async {
+    final db = await database;
+    return await db.delete(
+      'health_vectors',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> insertHealthAnomaly(HealthAnomaly anomaly) async {
+    final db = await database;
+    return await db.insert('health_anomalies', anomaly.toMap());
+  }
+
+  Future<List<HealthAnomaly>> getHealthAnomalies({bool? acknowledged, bool? resolved, int? limit}) async {
+    final db = await database;
+    final maps = await db.query('health_anomalies', limit: limit);
+    
+    var results = List.generate(maps.length, (i) => HealthAnomaly.fromMap(maps[i]));
+    
+    if (acknowledged != null) {
+      results = results.where((a) => a.isAcknowledged == (acknowledged ? 1 : 0)).toList();
+    }
+    if (resolved != null) {
+      results = results.where((a) => a.isResolved == (resolved ? 1 : 0)).toList();
+    }
+    
+    return results;
+  }
+
+  Future<int> updateHealthAnomaly(HealthAnomaly anomaly) async {
+    final db = await database;
+    return await db.update(
+      'health_anomalies',
+      anomaly.toMap(),
+      where: 'id = ?',
+      whereArgs: [anomaly.id],
+    );
+  }
+
+  Future<int> deleteHealthAnomaly(int id) async {
+    final db = await database;
+    return await db.delete(
+      'health_anomalies',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> insertSmartReminder(SmartReminder reminder) async {
+    final db = await database;
+    return await db.insert('smart_reminders', reminder.toMap());
+  }
+
+  Future<List<SmartReminder>> getSmartReminders({bool? active, bool? snoozed, int? reminderType}) async {
+    final db = await database;
+    final maps = await db.query('smart_reminders');
+    
+    var results = List.generate(maps.length, (i) => SmartReminder.fromMap(maps[i]));
+    
+    if (active != null) {
+      results = results.where((r) => r.isActive == (active ? 1 : 0)).toList();
+    }
+    if (snoozed != null) {
+      results = results.where((r) => r.isSnoozed == (snoozed ? 1 : 0)).toList();
+    }
+    if (reminderType != null) {
+      results = results.where((r) => r.reminderType == reminderType).toList();
+    }
+    
+    return results;
+  }
+
+  Future<int> updateSmartReminder(SmartReminder reminder) async {
+    final db = await database;
+    return await db.update(
+      'smart_reminders',
+      reminder.toMap(),
+      where: 'id = ?',
+      whereArgs: [reminder.id],
+    );
+  }
+
+  Future<int> deleteSmartReminder(int id) async {
+    final db = await database;
+    return await db.delete(
+      'smart_reminders',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

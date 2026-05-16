@@ -1237,6 +1237,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Time Range'**
   String get timeRange;
+
+  /// Privacy protection screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Protection'**
+  String get privacyProtection;
+
+  /// Absolute privacy guarantee hero title
+  ///
+  /// In en, this message translates to:
+  /// **'Absolute Privacy Guarantee'**
+  String get absolutePrivacyGuarantee;
+
+  /// Privacy description
+  ///
+  /// In en, this message translates to:
+  /// **'All your data is encrypted and stored locally. AI inference runs on your device, no data is uploaded to the cloud.'**
+  String get privacyDescription;
+
+  /// End-to-end encryption feature
+  ///
+  /// In en, this message translates to:
+  /// **'End-to-End Encryption'**
+  String get endToEndEncryption;
+
+  /// Encryption description
+  ///
+  /// In en, this message translates to:
+  /// **'All data encrypted with AES-256'**
+  String get encryptionDescription;
+
+  /// No cloud upload feature
+  ///
+  /// In en, this message translates to:
+  /// **'Zero Cloud Upload'**
+  String get noCloudUpload;
+
+  /// No cloud description
+  ///
+  /// In en, this message translates to:
+  /// **'Your data never leaves your device'**
+  String get noCloudDescription;
+
+  /// Local AI inference feature
+  ///
+  /// In en, this message translates to:
+  /// **'Local AI Inference'**
+  String get localInference;
+
+  /// Local inference description
+  ///
+  /// In en, this message translates to:
+  /// **'AI models run directly on your device chip'**
+  String get localInferenceDescription;
+
+  /// Zero data collection feature
+  ///
+  /// In en, this message translates to:
+  /// **'Zero Data Collection'**
+  String get zeroDataCollection;
+
+  /// Zero data description
+  ///
+  /// In en, this message translates to:
+  /// **'No personal data collected or analyzed'**
+  String get zeroDataDescription;
+
+  /// Privacy verified badge title
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Verified'**
+  String get privacyVerified;
+
+  /// Privacy verified description
+  ///
+  /// In en, this message translates to:
+  /// **'All processing done locally, no internet required'**
+  String get privacyVerifiedDescription;
+
+  /// AI mode settings section
+  ///
+  /// In en, this message translates to:
+  /// **'AI Mode Settings'**
+  String get aiModeSettings;
+
+  /// Cloud AI mode
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud Mode'**
+  String get cloudMode;
+
+  /// Cloud mode description
+  ///
+  /// In en, this message translates to:
+  /// **'Use cloud AI service, internet required'**
+  String get cloudModeDescription;
+
+  /// Local AI mode
+  ///
+  /// In en, this message translates to:
+  /// **'Local Mode'**
+  String get localMode;
+
+  /// Local mode description
+  ///
+  /// In en, this message translates to:
+  /// **'Run entirely locally, maximum privacy'**
+  String get localModeDescription;
+
+  /// Hybrid AI mode
+  ///
+  /// In en, this message translates to:
+  /// **'Hybrid Mode'**
+  String get hybridMode;
+
+  /// Hybrid mode description
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer local, fall back to cloud'**
+  String get hybridModeDescription;
+
+  /// AI mode changed message
+  ///
+  /// In en, this message translates to:
+  /// **'AI mode changed'**
+  String get aiModeChanged;
+
+  /// Security information section
+  ///
+  /// In en, this message translates to:
+  /// **'Security Information'**
+  String get securityInfo;
+
+  /// Encryption standard label
+  ///
+  /// In en, this message translates to:
+  /// **'Encryption Standard'**
+  String get encryptionStandard;
+
+  /// Key management label
+  ///
+  /// In en, this message translates to:
+  /// **'Key Management'**
+  String get keyManagement;
+
+  /// Secure key storage description
+  ///
+  /// In en, this message translates to:
+  /// **'Device secure storage'**
+  String get secureKeyStorage;
+
+  /// Data storage label
+  ///
+  /// In en, this message translates to:
+  /// **'Data Storage'**
+  String get dataStorage;
+
+  /// Local storage only description
+  ///
+  /// In en, this message translates to:
+  /// **'Local storage only'**
+  String get localOnlyStorage;
 }
 
 class _AppLocalizationsDelegate

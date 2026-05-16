@@ -771,5 +771,113 @@
   "timeRange": "Time Range",
   "@timeRange": {
     "description": "Time range label"
+  },
+  "privacyProtection": "Privacy Protection",
+  "@privacyProtection": {
+    "description": "Privacy protection screen title"
+  },
+  "absolutePrivacyGuarantee": "Absolute Privacy Guarantee",
+  "@absolutePrivacyGuarantee": {
+    "description": "Absolute privacy guarantee hero title"
+  },
+  "privacyDescription": "All your data is encrypted and stored locally. AI inference runs on your device, no data is uploaded to the cloud.",
+  "@privacyDescription": {
+    "description": "Privacy description"
+  },
+  "endToEndEncryption": "End-to-End Encryption",
+  "@endToEndEncryption": {
+    "description": "End-to-end encryption feature"
+  },
+  "encryptionDescription": "All data encrypted with AES-256",
+  "@encryptionDescription": {
+    "description": "Encryption description"
+  },
+  "noCloudUpload": "Zero Cloud Upload",
+  "@noCloudUpload": {
+    "description": "No cloud upload feature"
+  },
+  "noCloudDescription": "Your data never leaves your device",
+  "@noCloudDescription": {
+    "description": "No cloud description"
+  },
+  "localInference": "Local AI Inference",
+  "@localInference": {
+    "description": "Local AI inference feature"
+  },
+  "localInferenceDescription": "AI models run directly on your device chip",
+  "@localInferenceDescription": {
+    "description": "Local inference description"
+  },
+  "zeroDataCollection": "Zero Data Collection",
+  "@zeroDataCollection": {
+    "description": "Zero data collection feature"
+  },
+  "zeroDataDescription": "No personal data collected or analyzed",
+  "@zeroDataDescription": {
+    "description": "Zero data description"
+  },
+  "privacyVerified": "Privacy Verified",
+  "@privacyVerified": {
+    "description": "Privacy verified badge title"
+  },
+  "privacyVerifiedDescription": "All processing done locally, no internet required",
+  "@privacyVerifiedDescription": {
+    "description": "Privacy verified description"
+  },
+  "aiModeSettings": "AI Mode Settings",
+  "@aiModeSettings": {
+    "description": "AI mode settings section"
+  },
+  "cloudMode": "Cloud Mode",
+  "@cloudMode": {
+    "description": "Cloud AI mode"
+  },
+  "cloudModeDescription": "Use cloud AI service, internet required",
+  "@cloudModeDescription": {
+    "description": "Cloud mode description"
+  },
+  "localMode": "Local Mode",
+  "@localMode": {
+    "description": "Local AI mode"
+  },
+  "localModeDescription": "Run entirely locally, maximum privacy",
+  "@localModeDescription": {
+    "description": "Local mode description"
+  },
+  "hybridMode": "Hybrid Mode",
+  "@hybridMode": {
+    "description": "Hybrid AI mode"
+  },
+  "hybridModeDescription": "Prefer local, fall back to cloud",
+  "@hybridModeDescription": {
+    "description": "Hybrid mode description"
+  },
+  "aiModeChanged": "AI mode changed",
+  "@aiModeChanged": {
+    "description": "AI mode changed message"
+  },
+  "securityInfo": "Security Information",
+  "@securityInfo": {
+    "description": "Security information section"
+  },
+  "encryptionStandard": "Encryption Standard",
+  "@encryptionStandard": {
+    "description": "Encryption standard label"
+  },
+  "keyManagement": "Key Management",
+  "@keyManagement": {
+    "description": "Key management label"
+  },
+  "secureKeyStorage": "Device secure storage",
+  "@secureKeyStorage": {
+    "description": "Secure key storage description"
+  },
+  "dataStorage": "Data Storage",
+  "@dataStorage": {
+    "description": "Data storage label"
+  },
+  "localOnlyStorage": "Local storage only",
+  "@localOnlyStorage": {
+    "description": "Local storage only description"
   }
 }

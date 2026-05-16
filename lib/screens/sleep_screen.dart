@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../services/health_service.dart';
@@ -7,6 +8,8 @@ import '../services/sleep_suggestion_service.dart';
 import '../models/sleep_record.dart';
 import '../models/user_profile.dart';
 import '../widgets/daily_knowledge_card.dart';
+import '../providers/theme_provider.dart';
+import '../widgets/dynamic_background.dart';
 import '../l10n/app_localizations.dart';
 
 class SleepScreen extends StatefulWidget {
@@ -173,6 +176,7 @@ class _SleepScreenState extends State<SleepScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final todayRecord = _todayRecords.isNotEmpty ? _todayRecords.first : null;
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -206,7 +210,9 @@ class _SleepScreenState extends State<SleepScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: DynamicBackground(
+        theme: themeProvider.currentTheme,
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,6 +411,7 @@ class _SleepScreenState extends State<SleepScreen> {
               title: l10n.sleepEducation,
             ),
           ],
+        ),
         ),
       ),
     );

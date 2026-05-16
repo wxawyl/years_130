@@ -584,4 +584,85 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timeRange => 'Time Range';
+
+  @override
+  String get privacyProtection => '隐私保护';
+
+  @override
+  String get absolutePrivacyGuarantee => '绝对隐私保障';
+
+  @override
+  String get privacyDescription => '您的所有数据都经过加密存储在本地，AI推理在设备端完成，不上传任何数据到云端。';
+
+  @override
+  String get endToEndEncryption => '端到端加密';
+
+  @override
+  String get encryptionDescription => '所有数据使用AES-256加密存储';
+
+  @override
+  String get noCloudUpload => '零云端上传';
+
+  @override
+  String get noCloudDescription => '数据永远不会离开您的设备';
+
+  @override
+  String get localInference => '本地AI推理';
+
+  @override
+  String get localInferenceDescription => '利用设备芯片直接运行AI模型';
+
+  @override
+  String get zeroDataCollection => '零数据收集';
+
+  @override
+  String get zeroDataDescription => '不收集、不分析您的个人数据';
+
+  @override
+  String get privacyVerified => '隐私已验证';
+
+  @override
+  String get privacyVerifiedDescription => '所有处理都在本地完成，无需联网';
+
+  @override
+  String get aiModeSettings => 'AI模式设置';
+
+  @override
+  String get cloudMode => '云端模式';
+
+  @override
+  String get cloudModeDescription => '使用云端AI服务，需要联网';
+
+  @override
+  String get localMode => '本地模式';
+
+  @override
+  String get localModeDescription => '完全本地运行，保护隐私';
+
+  @override
+  String get hybridMode => '混合模式';
+
+  @override
+  String get hybridModeDescription => '优先本地，失败时降级云端';
+
+  @override
+  String get aiModeChanged => 'AI模式已切换';
+
+  @override
+  String get securityInfo => '安全信息';
+
+  @override
+  String get encryptionStandard => '加密标准';
+
+  @override
+  String get keyManagement => '密钥管理';
+
+  @override
+  String get secureKeyStorage => '设备安全存储';
+
+  @override
+  String get dataStorage => '数据存储';
+
+  @override
+  String get localOnlyStorage => '仅本地存储';
 }

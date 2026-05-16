@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../services/health_service.dart';
@@ -7,6 +8,8 @@ import '../services/calorie_calculator_service.dart';
 import '../models/exercise_record.dart';
 import '../models/user_profile.dart';
 import '../widgets/daily_knowledge_card.dart';
+import '../providers/theme_provider.dart';
+import '../widgets/dynamic_background.dart';
 import '../l10n/app_localizations.dart';
 
 class ExerciseScreen extends StatefulWidget {
@@ -327,6 +330,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -360,9 +364,11 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         ),
         centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: DynamicBackground(
+        theme: themeProvider.currentTheme,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,6 +545,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                 ],
               ),
             ),
+        ),
     );
   }
 }

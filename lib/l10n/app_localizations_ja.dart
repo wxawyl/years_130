@@ -585,4 +585,88 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timeRange => 'Time Range';
+
+  @override
+  String get privacyProtection => 'Privacy Protection';
+
+  @override
+  String get absolutePrivacyGuarantee => 'Absolute Privacy Guarantee';
+
+  @override
+  String get privacyDescription =>
+      'All your data is encrypted and stored locally. AI inference runs on your device, no data is uploaded to the cloud.';
+
+  @override
+  String get endToEndEncryption => 'End-to-End Encryption';
+
+  @override
+  String get encryptionDescription => 'All data encrypted with AES-256';
+
+  @override
+  String get noCloudUpload => 'Zero Cloud Upload';
+
+  @override
+  String get noCloudDescription => 'Your data never leaves your device';
+
+  @override
+  String get localInference => 'Local AI Inference';
+
+  @override
+  String get localInferenceDescription =>
+      'AI models run directly on your device chip';
+
+  @override
+  String get zeroDataCollection => 'Zero Data Collection';
+
+  @override
+  String get zeroDataDescription => 'No personal data collected or analyzed';
+
+  @override
+  String get privacyVerified => 'Privacy Verified';
+
+  @override
+  String get privacyVerifiedDescription =>
+      'All processing done locally, no internet required';
+
+  @override
+  String get aiModeSettings => 'AI Mode Settings';
+
+  @override
+  String get cloudMode => 'Cloud Mode';
+
+  @override
+  String get cloudModeDescription => 'Use cloud AI service, internet required';
+
+  @override
+  String get localMode => 'Local Mode';
+
+  @override
+  String get localModeDescription => 'Run entirely locally, maximum privacy';
+
+  @override
+  String get hybridMode => 'Hybrid Mode';
+
+  @override
+  String get hybridModeDescription => 'Prefer local, fall back to cloud';
+
+  @override
+  String get aiModeChanged => 'AI mode changed';
+
+  @override
+  String get securityInfo => 'Security Information';
+
+  @override
+  String get encryptionStandard => 'Encryption Standard';
+
+  @override
+  String get keyManagement => 'Key Management';
+
+  @override
+  String get secureKeyStorage => 'Device secure storage';
+
+  @override
+  String get dataStorage => 'Data Storage';
+
+  @override
+  String get localOnlyStorage => 'Local storage only';
 }

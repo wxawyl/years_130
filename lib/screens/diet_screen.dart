@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../services/database_service.dart';
 import '../services/score_service.dart';
 import '../models/diet_record.dart';
 import '../widgets/daily_knowledge_card.dart';
 import '../models/food_recognition_result.dart';
+import '../providers/theme_provider.dart';
+import '../widgets/dynamic_background.dart';
 import '../l10n/app_localizations.dart';
 import 'camera_recognition_screen.dart';
 import '../services/diet_suggestion_service.dart';
@@ -139,13 +142,16 @@ class _DietScreenState extends State<DietScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.diet),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: DynamicBackground(
+        theme: themeProvider.currentTheme,
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,6 +300,7 @@ class _DietScreenState extends State<DietScreen> {
               title: l10n.dietEducation,
             ),
           ],
+        ),
         ),
       ),
     );
