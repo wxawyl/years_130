@@ -2,6 +2,109 @@
 
 ## [Unreleased]
 
+### v1.1.0 - 2026-05-16
+
+#### 🌟 数字孪生健康仪表盘
+
+##### 核心功能
+- **动态数字孪生形象**：可视化健康状态，熬夜脸色变差，运动肌肉线条变清晰
+- **实时状态映射**：
+  - 睡眠状态 → 眼神明亮度、黑眼圈
+  - 运动状态 → 肌肉线条、体态
+  - 饮食状态 → 皮肤光泽
+  - 情绪状态 → 表情变化
+- **呼吸动画**：自然的呼吸效果
+- **特效系统**：光晕、星星闪烁等视觉效果
+
+##### 技术实现
+- 使用 CustomPaint 实现高性能渲染（60fps）
+- 与 MoodTheme 系统无缝集成
+- 平滑的状态过渡动画
+
+##### 新增文件
+- `lib/models/twin_visual_params.dart` - 数字孪生参数模型
+- `lib/widgets/digital_twin_widget.dart` - 数字孪生主组件
+- `lib/widgets/twin_face_widget.dart` - 面部渲染组件
+- `lib/widgets/twin_body_widget.dart` - 身体渲染组件
+- `lib/widgets/twin_effects_widget.dart` - 特效组件
+
+#### 🎨 情绪主题系统
+
+##### 功能特性
+- 5种情绪主题（极佳、良好、一般、需要关注、疲惫）
+- 动态渐变背景
+- 与健康数据联动的主题切换
+- 本地化存储主题偏好
+
+##### 新增文件
+- `lib/theme/mood_colors.dart` - 情绪色彩系统
+- `lib/widgets/dynamic_background.dart` - 动态背景组件
+- `lib/widgets/mood_indicator.dart` - 情绪指示器
+- `lib/providers/theme_provider.dart` - 主题状态管理
+- `lib/screens/theme_demo_screen.dart` - 主题演示页面
+
+#### 🔍 RAG健康知识库
+
+##### 功能特性
+- 向量检索系统
+- 健康知识智能问答
+- 营养信息查询
+
+##### 新增文件
+- `lib/services/vector_service.dart` - 向量服务
+- `lib/models/health_vector.dart` - 健康向量模型
+- `lib/models/rag_search_result.dart` - RAG搜索结果
+- `lib/screens/knowledge_base_screen.dart` - 知识库页面
+
+#### ⚠️ 主动式关怀系统
+
+##### 功能特性
+- 异常检测服务
+- 智能提醒系统
+- 个性化健康建议
+
+##### 新增文件
+- `lib/services/anomaly_detection_service.dart` - 异常检测服务
+- `lib/services/smart_reminder_service.dart` - 智能提醒服务
+- `lib/models/health_anomaly.dart` - 健康异常模型
+- `lib/models/smart_reminder.dart` - 智能提醒模型
+- `lib/screens/proactive_interaction_screen.dart` - 主动关怀页面
+
+#### 🤖 AI服务增强
+
+##### 功能特性
+- 多AI提供商支持（OpenAI、Claude、豆包、本地）
+- 模型路由服务
+- 本地模型服务
+
+##### 新增文件
+- `lib/services/model_router_service.dart` - 模型路由服务
+- `lib/services/local_model_service.dart` - 本地模型服务
+- `lib/services/providers/` - AI提供商实现
+- `lib/screens/model_settings_screen.dart` - AI模型设置页面
+
+#### 🔒 隐私与安全
+
+##### 功能特性
+- 加密服务（AES-256）
+- 本地食物识别
+- 营养数据库
+
+##### 新增文件
+- `lib/services/encryption_service.dart` - 加密服务
+- `lib/services/local_food_recognition_service.dart` - 本地食物识别
+- `lib/services/nutrition_database_service.dart` - 营养数据库
+
+#### 📄 文档更新
+
+##### 新增文档
+- `docs/健康仪表盘需求分析.md` - 数字孪生需求分析
+- `docs/健康仪表盘需求影响分析.md` - 技术影响评估
+- `docs/数字孪生集成方案.md` - 集成方案
+- `docs/数字孪生设计方案.md` - 详细设计
+
+---
+
 ### v1.0.0 - 2024-05-16
 
 #### 🏗️ 项目重构与优化
